@@ -91,7 +91,7 @@ public class JobDoneMapper extends AbstractSqlMapper<JobDone, JobDoneKey>  imple
 			}
 
 			public String getSql() throws ORMException {
-				return BASE_SELECT + " WHERE scd_sch_id = ? AND rownum = 1 ORDER BY scd_date DESC";
+				return "SELECT scd_sch_id, MAX(scd_date) AS scd_date FROM schedules_done t WHERE t.scd_sch_id = ? GROUP BY scd_sch_id";
 			}
 
 			public void setParams(PreparedStatement stm, JobDone obj) throws SQLException, ORMException {
