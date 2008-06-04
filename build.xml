@@ -1,0 +1,41 @@
+<project name="utils" default="dist" basedir=".">
+	<description>
+       gushuley utils
+    </description>
+
+	<property name="lib" location="lib" />
+	<property name="src" location="src" />
+	<property name="dist" location="dist" />
+	<property name="build" location="bin" />
+
+	<path id="javac.classpath">
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="clean">
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+
+	<target name="init">
+		<mkdir dir="${dist}" />
+		<mkdir dir="${build}" />
+	</target>
+
+	<target name="compile" depends="clean, init" description="Compile the source for java 1.5">
+		<javac target="1.5" source="1.5" destdir="${build}" srcdir="${src}" debug="on" deprecation="on" encoding="Cp1251" optimize="off" classpathref="javac.classpath" />
+		<copy todir="${build}">
+			<fileset dir="${src}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="dist" depends="compile" description="Generate the distribution for java 1.5">
+		<jar jarfile="${dist}/com-gushuley-utils.jar">
+			<fileset dir="${build}"/>
+		</jar>
+	</target>
+</project>
