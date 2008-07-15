@@ -12,6 +12,9 @@ public interface ORMContext {
 	public <C extends ORMObject<?>, K> 
 		Mapper<C, K> getMapper(Class<C> objectClass) throws ORMException;
 
+	public <C extends ORMObject<?>, I> 
+		I getMapper(Class<C> objectClass, Class<I> infClass) throws ORMException;
+
 	public abstract void update() throws ORMException;
 
 	public abstract void commit() throws ORMException;

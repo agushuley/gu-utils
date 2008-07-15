@@ -2,6 +2,7 @@ package com.gushuley.utils.orm.impl;
 
 import java.sql.*;
 import java.util.Map;
+import java.util.Properties;
 
 public class GeneralConnectionWrapper implements Connection {
 	public GeneralConnectionWrapper(Connection inner) {
@@ -168,5 +169,74 @@ public class GeneralConnectionWrapper implements Connection {
 
 	public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
 		inner.setTypeMap(map);
+	}
+
+	@Override
+	public Array createArrayOf(String typeName, Object[] elements)
+			throws SQLException {
+		return inner.createArrayOf(typeName, elements);
+	}
+
+	@Override
+	public Blob createBlob() throws SQLException {
+		return inner.createBlob();
+	}
+
+	@Override
+	public Clob createClob() throws SQLException {
+		return inner.createClob();
+	}
+
+	@Override
+	public NClob createNClob() throws SQLException {
+		return inner.createNClob();
+	}
+
+	@Override
+	public SQLXML createSQLXML() throws SQLException {
+		return inner.createSQLXML();
+	}
+
+	@Override
+	public Struct createStruct(String typeName, Object[] attributes)
+			throws SQLException {
+		return inner.createStruct(typeName, attributes);
+	}
+
+	@Override
+	public Properties getClientInfo() throws SQLException {
+		return inner.getClientInfo();
+	}
+
+	@Override
+	public String getClientInfo(String name) throws SQLException {
+		return inner.getClientInfo(name);
+	}
+
+	@Override
+	public boolean isValid(int timeout) throws SQLException {
+		return inner.isValid(timeout);
+	}
+
+	@Override
+	public void setClientInfo(Properties properties)
+			throws SQLClientInfoException {
+		inner.setClientInfo(properties);
+	}
+
+	@Override
+	public void setClientInfo(String name, String value)
+			throws SQLClientInfoException {
+		inner.setClientInfo(name, value);
+	}
+
+	@Override
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		return inner.isWrapperFor(iface);
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		return inner.unwrap(iface);
 	}
 }

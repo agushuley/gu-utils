@@ -11,7 +11,8 @@ import org.apache.log4j.Logger;
 import com.gushuley.utils.orm.*;
 
 
-public class GenericContext implements ORMContext {
+public class GenericContext 
+implements ORMContext {
 	private Map<String, InstancesCountConnectionWrapper> cnns = new HashMap<String, InstancesCountConnectionWrapper>();
 	private Map<Class<? extends ORMObject<?>>, Class<? extends Mapper<?,?>>> 
 		mappersForClasses = new HashMap<Class<? extends ORMObject<?>>, Class<? extends Mapper<?,?>>>();
@@ -207,6 +208,17 @@ public class GenericContext implements ORMContext {
 				count = count - 1;
 			}
 			return count;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <C extends ORMObject<?>, I> I getMapper(Class<C> objectClass, Class<I> infClass) throws ORMException {
+		Object i = getMapper(objectClass);
+		try {
+			return (I) i;
+		} catch (ClassCastException e) {
+			throw new ORMException("Mapper " + i.getClass() + " does not implements interface " + infClass);
 		}
 	}
 }
