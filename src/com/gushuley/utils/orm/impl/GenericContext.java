@@ -16,7 +16,15 @@ implements ORMContext {
 	private Map<String, InstancesCountConnectionWrapper> cnns = new HashMap<String, InstancesCountConnectionWrapper>();
 	private Map<Class<? extends ORMObject<?>>, Class<? extends Mapper<?,?>>> 
 		mappersForClasses = new HashMap<Class<? extends ORMObject<?>>, Class<? extends Mapper<?,?>>>();
+	private Logger log = Logger.getLogger(getClass());
+	private Map<String, String> properties = new HashMap<String, String>();
 
+	public GenericContext(String... props) {
+		for (int i = 0; i < props.length / 2; i++) {
+			properties.put(props[i * 2], props[i * 2 + 1]);
+		}
+	}
+	
 	public void registerMapper(Class<? extends ORMObject<?>> aClass, Class<? extends Mapper<?,?>> mapper) {
 		mappersForClasses.put(aClass, mapper);
 	}
@@ -154,8 +162,6 @@ implements ORMContext {
 		}
 	}
 
-	private Logger log = Logger.getLogger(getClass());
-
 	public <C extends ORMObject<?>, K> C find(Class<C> objectClass, K key) throws ORMException {
 		return getMapper(objectClass).getById(key);
 	}
@@ -220,5 +226,10 @@ implements ORMContext {
 		} catch (ClassCastException e) {
 			throw new ORMException("Mapper " + i.getClass() + " does not implements interface " + infClass);
 		}
+	}
+
+	@Override
+	public Map<String, String> getProperties() {
+		return properties ;
 	}
 }
