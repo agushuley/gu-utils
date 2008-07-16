@@ -2,6 +2,7 @@ package com.gushuley.utils.orm;
 
 import java.sql.Connection;
 import java.util.Collection;
+import java.util.Map;
 
 public interface ORMContext {
 
@@ -28,4 +29,6 @@ public interface ORMContext {
 	public void add(ORMObject<?> o) throws ORMException;
 	
 	public <C extends ORMObject<?>, K> Collection<C> findAll(Class<C> objectClass) throws ORMException;
+	
+	public Map<String, String> getProperties();
 }
