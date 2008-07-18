@@ -6,10 +6,10 @@ import com.gushuley.utils.orm.ORMException;
 import com.gushuley.utils.orm.impl.*;
 
 
-public abstract class AbstractStringKeyNameSqlMapper<C extends AbstractStringKeyNameObject>
+public abstract class OracleAbstractStringKeyNameSqlMapperWithNullKey<C extends AbstractStringKeyNameObject>
 		extends AbstractKeyNameSqlMapper<C, String> {
 
-	public AbstractStringKeyNameSqlMapper(String string, String string2, String string3, SqlAttribute... attrs) {
+	public OracleAbstractStringKeyNameSqlMapperWithNullKey(String string, String string2, String string3, SqlAttribute... attrs) {
 		super(string, string2, string3, attrs);
 	}
 	
@@ -32,7 +32,7 @@ public abstract class AbstractStringKeyNameSqlMapper<C extends AbstractStringKey
 			}
 		}
 		return "SELECT " + idColumn + " ," + nameColumn + attrs + " FROM " + tableName
-				+ " WHERE " + idColumn + " = ?";
+				+ " WHERE NVL(" + idColumn + ", '-') = NVL(?, '-')";
 	}
 	
 	@Override
@@ -40,7 +40,7 @@ public abstract class AbstractStringKeyNameSqlMapper<C extends AbstractStringKey
 		return new GetQueryCallback<C>() {
 			public String getSql() throws ORMException {
 				return "DELETE FROM " + tableName + 
-					" WHERE" + idColumn + " = ?";
+					" WHERE NVL(" + idColumn + ", '-') = NVL(?, '-')";
 			}
 	
 			public void setParams(PreparedStatement stm, C obj)
@@ -65,7 +65,7 @@ public abstract class AbstractStringKeyNameSqlMapper<C extends AbstractStringKey
 					}
 				}
 				return "UPDATE " + tableName + " SET " + nameColumn + " = ? "
-						+ attrs + " WHERE " + idColumn + " = ?";
+						+ attrs + " WHERE NVL(" + idColumn + ", '-') = NVL(?, '-')";
 			}
 	
 			public void setParams(PreparedStatement stm, C obj)
