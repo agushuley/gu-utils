@@ -218,7 +218,6 @@ implements ORMContext {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
 	public <C extends ORMObject<?>, I> I getMapper(Class<C> objectClass, Class<I> infClass) throws ORMException {
 		Object i = getMapper(objectClass);
 		try {
@@ -228,7 +227,6 @@ implements ORMContext {
 		}
 	}
 
-	@Override
 	public Map<String, String> getProperties() {
 		return properties ;
 	}

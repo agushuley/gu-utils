@@ -2,7 +2,6 @@ package com.gushuley.utils.orm.impl;
 
 import java.sql.*;
 import java.util.Map;
-import java.util.Properties;
 
 public class GeneralConnectionWrapper implements Connection {
 	public GeneralConnectionWrapper(Connection inner) {
@@ -170,7 +169,7 @@ public class GeneralConnectionWrapper implements Connection {
 	public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
 		inner.setTypeMap(map);
 	}
-
+/*
 	@Override
 	public Array createArrayOf(String typeName, Object[] elements)
 			throws SQLException {
@@ -238,5 +237,5 @@ public class GeneralConnectionWrapper implements Connection {
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		return inner.unwrap(iface);
-	}
+	} */
 }
