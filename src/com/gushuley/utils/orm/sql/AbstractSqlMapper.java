@@ -264,10 +264,18 @@ public abstract class AbstractSqlMapper<T extends ORMObject<K>, K>
 		ctx.releaseConnection(cnn);		
 	}
 
-	protected int getSqNextNumberInt(String sqName) throws ORMException {
+	protected int getSqNextNumberInt(String sqName, SqlDialect dialect) throws ORMException {
 		Connection cnn = getConnection(false);		
-		try {			
-			PreparedStatement stm = cnn.prepareStatement("SELECT " + sqName + ".NEXTVAL id FROM dual");
+		try {
+			final String text;
+			if (dialect == SqlDialect.ORACLE) {
+				text = "SELECT " + sqName + ".NEXTVAL id FROM dual";
+			} else if (dialect == SqlDialect.POSTGRES) {
+				text = "SELECT nextval('" + sqName + "') AS id";				
+			} else {
+				throw new ORMException("Unknown SQL dialect " + dialect);
+			}
+			final PreparedStatement stm = cnn.prepareStatement(text);
 			try {
 				ResultSet set = stm.executeQuery();
 				if (set.next()) {
@@ -285,10 +293,22 @@ public abstract class AbstractSqlMapper<T extends ORMObject<K>, K>
 		}
 	}
 
-	protected long getSqNextNumberLong(String sqName) throws ORMException {
+	protected int getSqNextNumberInt(String sqName) throws ORMException {
+		return getSqNextNumberInt(sqName, SqlDialect.ORACLE);
+	}
+
+	protected long getSqNextNumberLong(String sqName, SqlDialect dialect) throws ORMException {
 		Connection cnn = getConnection(false);		
 		try {			
-			PreparedStatement stm = cnn.prepareStatement("SELECT " + sqName + ".NEXTVAL id FROM dual");
+			final String text;
+			if (dialect == SqlDialect.ORACLE) {
+				text = "SELECT " + sqName + ".NEXTVAL id FROM dual";
+			} else if (dialect == SqlDialect.POSTGRES) {
+				text = "SELECT nextval('" + sqName + "') AS id";				
+			} else {
+				throw new ORMException("Unknown SQL dialect " + dialect);
+			}
+			final PreparedStatement stm = cnn.prepareStatement(text);
 			try {
 				ResultSet set = stm.executeQuery();
 				if (set.next()) {
@@ -304,5 +324,9 @@ public abstract class AbstractSqlMapper<T extends ORMObject<K>, K>
 		} finally {
 			releaseConnection(cnn);
 		}
+	}
+
+	protected long getSqNextNumberLong(String sqName) throws ORMException {
+		return getSqNextNumberLong(sqName, SqlDialect.ORACLE);
 	}
 }
