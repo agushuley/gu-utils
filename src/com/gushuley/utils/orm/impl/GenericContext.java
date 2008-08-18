@@ -39,7 +39,13 @@ implements ORMContext {
 						i = ((DataSource) new InitialContext().lookup(key)).getConnection();				
 					} else {
 						i = DriverManager.getConnection(key);
-					}					
+					}
+					try {
+						validateConnection(key, i);
+					} catch (ORMException e) {
+						i.close();
+						throw e;
+					}
 					i.setAutoCommit(false);
 					cnn = new InstancesCountConnectionWrapper(i);
 					cnns.put(key, cnn);
@@ -229,5 +235,8 @@ implements ORMContext {
 
 	public Map<String, String> getProperties() {
 		return properties ;
+	}
+	
+	protected void validateConnection(String key, Connection cnn) throws ORMException {
 	}
 }
