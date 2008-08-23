@@ -63,7 +63,7 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 			public void setParams(PreparedStatement stm, C obj)
 					throws SQLException {
 				setKeyValue(stm, 1, obj.getKey());
-				stm.setString(3, obj.getName());
+				stm.setString(2, obj.getName());
 				if (attributes != null) {
 					int i = 0;
 					for (SqlAttribute a : attributes) {
@@ -102,7 +102,7 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 						i++;
 					}
 				}
-				setKeyValue(stm, 3 + i, obj.getKey());
+				setKeyValue(stm, 2 + i, obj.getKey());
 			}
 
 			public void executeStep(Connection cnn, C obj) throws SQLException {
