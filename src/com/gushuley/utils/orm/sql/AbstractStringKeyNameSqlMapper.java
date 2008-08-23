@@ -31,7 +31,7 @@ public abstract class AbstractStringKeyNameSqlMapper<C extends AbstractStringKey
 				attrs.append(", " + a.getColumn());
 			}
 		}
-		return "SELECT " + idColumn + " ," + nameColumn + attrs + " FROM " + tableName
+		return "SELECT " + idColumn + " ," + nameColumn + attrs + " FROM " + getTableName()
 				+ " WHERE " + idColumn + " = ?";
 	}
 	
@@ -39,7 +39,7 @@ public abstract class AbstractStringKeyNameSqlMapper<C extends AbstractStringKey
 	protected GetQueryCallback<C> getDeleteQueryCB() {
 		return new GetQueryCallback<C>() {
 			public String getSql() throws ORMException {
-				return "DELETE FROM " + tableName + 
+				return "DELETE FROM " + getTableName() + 
 					" WHERE" + idColumn + " = ?";
 			}
 	
@@ -64,7 +64,7 @@ public abstract class AbstractStringKeyNameSqlMapper<C extends AbstractStringKey
 						attrs.append(", " + a.getColumn() + " = ?");
 					}
 				}
-				return "UPDATE " + tableName + " SET " + nameColumn + " = ? "
+				return "UPDATE " + getTableName() + " SET " + nameColumn + " = ? "
 						+ attrs + " WHERE " + idColumn + " = ?";
 			}
 	

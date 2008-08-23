@@ -12,20 +12,16 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 	public AbstractKeyNameSqlMapper(String table, String idColumn,
 			String nameColumn, SqlAttribute... attributes) {
 		super(true);
-		this.tableName = table;
+		this.aTableName = table;
 		this.idColumn = idColumn;
 		this.nameColumn = nameColumn;
 		this.attributes = attributes;
 	}
 
-	protected String tableName;
-	protected String idColumn;
-	protected String nameColumn;
-	protected SqlAttribute[] attributes;
-
-	public AbstractKeyNameSqlMapper() {
-		super();
-	}
+	private final String aTableName;
+	protected final String idColumn;
+	protected final String nameColumn;
+	protected final SqlAttribute[] attributes;
 
 	protected abstract void setKeyValue(PreparedStatement stm, int n, K key) throws SQLException;
 
@@ -33,7 +29,7 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 	protected GetQueryCallback<C> getDeleteQueryCB() {
 		return new GetQueryCallback<C>() {
 			public String getSql() throws ORMException {
-				return "DELETE FROM " + tableName + " WHERE " + idColumn
+				return "DELETE FROM " + getTableName() + " WHERE " + idColumn
 						+ " = ?";
 			}
 	
@@ -59,7 +55,7 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 						attrs2.append(", ?");
 					}
 				}
-				return "INSERT INTO " + tableName + " (" + idColumn + " ,"
+				return "INSERT INTO " + getTableName() + " (" + idColumn + " ,"
 						+ nameColumn + attrs + ") " + 
 						" VALUES (?, ?" + attrs2 + ")";
 			}
@@ -92,7 +88,7 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 						attrs.append(", " + a.getColumn() + " = ?");
 					}
 				}
-				return "UPDATE " + tableName + " SET " + nameColumn + " = ? "
+				return "UPDATE " + getTableName() + " SET " + nameColumn + " = ? "
 						+ attrs + " WHERE " + idColumn + " = ?";
 			}
 	
@@ -122,7 +118,7 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 				attrs.append(", " + a.getColumn());
 			}
 		}
-		return "SELECT " + idColumn + " ," + nameColumn + attrs + " FROM " + tableName + " ORDER BY " + idColumn;
+		return "SELECT " + idColumn + " ," + nameColumn + attrs + " FROM " + getTableName() + " ORDER BY " + idColumn;
 	}
 
 	@Override
@@ -137,7 +133,7 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 				attrs.append(", " + a.getColumn());
 			}
 		}
-		return "SELECT " + idColumn + " ," + nameColumn + attrs + " FROM " + tableName
+		return "SELECT " + idColumn + " ," + nameColumn + attrs + " FROM " + getTableName()
 				+ " WHERE " + idColumn + " = ?";
 	}
 
@@ -160,6 +156,10 @@ public abstract class AbstractKeyNameSqlMapper<C extends AbtsractKeyNameObject<K
 
 	public K createKey() throws ORMException {
 		return null;
+	}
+
+	protected String getTableName() {
+		return aTableName;
 	}
 
 }
