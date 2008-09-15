@@ -31,4 +31,7 @@ public interface ORMContext {
 	public <C extends ORMObject<?>, K> Collection<C> findAll(Class<C> objectClass) throws ORMException;
 	
 	public Map<String, String> getProperties();
+
+	public <C extends ORMObject<?>, K, X extends ORMContext> Mapper2<C, K, X> getMapper2(
+			Class<C> forClass) throws ORMException;
 }

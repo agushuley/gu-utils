@@ -32,6 +32,23 @@ public class GenericORMObject<K> implements ORMObject<K> {
 		}
 	}
 
+	protected <T extends Object> T checkIsDirty(T o, T value) {
+		if (o == null) {
+			if (value != null) {
+				if (getORMState() == State.CLEAN) {
+					setORMState(State.DIRTY);
+				}				
+			}
+		} else {
+			if (!o.equals(value)) {
+				if (getORMState() == State.CLEAN) {
+					setORMState(State.DIRTY);
+				}
+			}
+		}
+		return value;
+	}
+
 	/* (non-Javadoc)
 	 * @see net.kyivstar.commons.orm.impl.ORMObject#getState()
 	 */

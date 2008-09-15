@@ -13,11 +13,11 @@ import com.gushuley.utils.orm.*;
 
 public class GenericContext 
 implements ORMContext {
-	private Map<String, InstancesCountConnectionWrapper> cnns = new HashMap<String, InstancesCountConnectionWrapper>();
-	private Map<Class<? extends ORMObject<?>>, Class<? extends Mapper<?,?>>> 
-		mappersForClasses = new HashMap<Class<? extends ORMObject<?>>, Class<? extends Mapper<?,?>>>();
-	private Logger log = Logger.getLogger(getClass());
-	private Map<String, String> properties = new HashMap<String, String>();
+	private final Map<String, InstancesCountConnectionWrapper> cnns = new HashMap<String, InstancesCountConnectionWrapper>();
+	public final Map<Class<? extends ORMObject<?>>, Class<? extends Mapper2<?,?,?>>> 
+		mappersForClasses = new HashMap<Class<? extends ORMObject<?>>, Class<? extends Mapper2<?,?,?>>>();
+	private final Logger log = Logger.getLogger(getClass());
+	private final Map<String, String> properties = new HashMap<String, String>();
 
 	public GenericContext(String... props) {
 		for (int i = 0; i < props.length / 2; i++) {
@@ -25,7 +25,7 @@ implements ORMContext {
 		}
 	}
 	
-	public void registerMapper(Class<? extends ORMObject<?>> aClass, Class<? extends Mapper<?,?>> mapper) {
+	public void registerMapper(Class<? extends ORMObject<?>> aClass, Class<? extends Mapper2<?,?,?>> mapper) {
 		mappersForClasses.put(aClass, mapper);
 	}
 	
@@ -34,19 +34,19 @@ implements ORMContext {
 			try {
 				InstancesCountConnectionWrapper cnn = cnns.get(key);
 				if (cnn == null) {
-					Connection i;
+					final Connection i;
 					if (key.startsWith("java:")) {
 						i = ((DataSource) new InitialContext().lookup(key)).getConnection();				
 					} else {
 						i = DriverManager.getConnection(key);
 					}
+					i.setAutoCommit(false);
 					try {
 						validateConnection(key, i);
 					} catch (ORMException e) {
 						i.close();
 						throw e;
 					}
-					i.setAutoCommit(false);
 					cnn = new InstancesCountConnectionWrapper(i);
 					cnns.put(key, cnn);
 				}
@@ -57,7 +57,7 @@ implements ORMContext {
 				return cnn;
 			} catch (NamingException e) {
 				throw new ORMException(e);
-			} catch (SQLException e) {
+			} catch (SQLException e) {				
 				throw new ORMException(e);
 			}
 		}
@@ -92,17 +92,18 @@ implements ORMContext {
 		}
 	}
 
-	private Map<Class<? extends Mapper<?,?>>, Mapper<?,?>> mappers = new HashMap<Class<? extends Mapper<?,?>>, Mapper<?,?>>();
+	private final Map<Class<? extends Mapper2<?,?,?>>, Mapper2<?,?,?>> mappers = new HashMap<Class<? extends Mapper2<?,?,?>>, Mapper2<?,?,?>>();
 
 	@SuppressWarnings("unchecked")
-	private synchronized <T extends Mapper<?,?>> T getMapperInstance(
-			Class<? extends T> mapperClass) throws ORMException {
+	public
+	synchronized <T extends Mapper2<?,?,?>> T getMapperInstance(Class<? extends T> mapperClass) throws ORMException 
+	{
 		if (mappers.containsKey(mapperClass)) {
 			return (T) mappers.get(mapperClass);
 		}
 		try {
 			T mapper = mapperClass.newInstance();
-			mapper.setContext(this);
+			((Mapper2<?, ?, ORMContext>)mapper).setContext(this);
 			mappers.put(mapperClass, mapper);
 			return mapper;
 		} catch (InstantiationException e) {
@@ -113,26 +114,37 @@ implements ORMContext {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized <C extends ORMObject<?>, K> 
-		Mapper<C, K> getMapper(Class<C> forClass) throws ORMException {
+	public synchronized <C extends ORMObject<?>, K, X extends ORMContext> Mapper2<C, K, X> getMapper2(Class<C> forClass) throws ORMException {
 		Class<?> objectClass = forClass;
 		
 		while (ORMObject.class.isAssignableFrom(objectClass)) {
 			if (mappersForClasses.containsKey(objectClass)) {
-				Mapper<C, K> mapperInstance = (Mapper<C,K>) getMapperInstance(mappersForClasses.get(objectClass));
-				return mapperInstance;
+				try {
+					return (Mapper2<C,K, X>) getMapperInstance(mappersForClasses.get(objectClass));
+				} catch (ClassCastException ex) {
+					throw new ORMException("Class " + forClass + " not implements Mapper2 interface");
+				}
 			}
 			objectClass = (Class<C>) objectClass.getSuperclass();
 		}
 		
 		throw new ORMException("Cannot find mapper for class: " + forClass.getName());		
 	}
+	
+	@SuppressWarnings("unchecked")
+	public synchronized <C extends ORMObject<?>, K>Mapper<C, K> getMapper(Class<C> forClass) throws ORMException {
+		try {
+			return (Mapper<C, K>) getMapper2(forClass);
+		} catch (ClassCastException ex) {
+			throw new ORMException("Class " + forClass + " not implements Mapper interface");
+		}
+	}
 
 	public synchronized void update() throws ORMException {
-		for (Mapper<?,?> mapper : mappers.values()) {
+		for (final Mapper2<?,?,?> mapper : mappers.values()) {
 			mapper.commit();
 		}
-		for (Mapper<?,?> mapper : mappers.values()) {
+		for (final Mapper2<?,?,?> mapper : mappers.values()) {
 			mapper.setClean();
 		}
 	}
@@ -151,7 +163,7 @@ implements ORMContext {
 	}
 
 	public synchronized void close() {
-		for (Mapper<?,?> mapper : mappers.values()) {
+		for (final Mapper2<?,?,?> mapper : mappers.values()) {
 			mapper.clear();
 		}		
 		mappers.clear();
@@ -169,16 +181,16 @@ implements ORMContext {
 	}
 
 	public <C extends ORMObject<?>, K> C find(Class<C> objectClass, K key) throws ORMException {
-		return getMapper(objectClass).getById(key);
+		return getMapper2(objectClass).getById(key);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void add(ORMObject<?> o) throws ORMException {
-		getMapper((Class<ORMObject>)o.getClass()).add(o);
+		getMapper2((Class<ORMObject>)o.getClass()).add(o);
 	}
 
 	public <C extends ORMObject<?>, K> Collection<C> find(Class<C> objectClass, K... key) throws ORMException {
-		Collection<C> c = new ArrayList<C>();
+		final Collection<C> c = new ArrayList<C>();
 		for (K k : key) {
 			C o = find(objectClass, k);
 			if (o != null) {
@@ -190,7 +202,7 @@ implements ORMContext {
 	}
 
 	public <C extends ORMObject<?>, K> Collection<C> findAll(Class<C> objectClass) throws ORMException {
-		return getMapper(objectClass).getAll();
+		return getMapper2(objectClass).getAll();
 	}
 	
 	private class InstancesCountConnectionWrapper extends GeneralConnectionWrapper {	
@@ -225,7 +237,7 @@ implements ORMContext {
 
 	@SuppressWarnings("unchecked")
 	public <C extends ORMObject<?>, I> I getMapper(Class<C> objectClass, Class<I> infClass) throws ORMException {
-		Object i = getMapper(objectClass);
+		Object i = getMapper2(objectClass);
 		try {
 			return (I) i;
 		} catch (ClassCastException e) {
