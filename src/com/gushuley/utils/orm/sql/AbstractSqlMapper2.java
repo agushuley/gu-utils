@@ -222,6 +222,7 @@ extends AbstractMapper2<T, K, C>
 			if (obj.getORMState() == State.DELETED) {
 				toRemove.add(obj.getKey());
 			}
+			obj.setORMState(ORMObject.State.CLEAN);
 		}
 		for (K key : toRemove) {
 			getRegistry().remove(key);
