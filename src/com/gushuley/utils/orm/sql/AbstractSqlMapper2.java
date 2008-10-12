@@ -11,6 +11,31 @@ import com.gushuley.utils.orm.impl.AbstractMapper2;
 public abstract class AbstractSqlMapper2<T extends ORMObject<K>, K, C extends ORMContext>
 extends AbstractMapper2<T, K, C> 
 {
+	private class GetScalarCallbackImpl<S> implements SelectQueryCallback {
+		private final GetScalarCallback<S> scb2;
+		private S value;
+		
+		private GetScalarCallbackImpl(GetScalarCallback<S> scb) {
+			this.scb2 = scb;
+			value = scb.getNull();
+		}
+		
+		@Override
+		public void onRow(ResultSet rs) throws ORMException, SQLException {
+			value = scb2.getValue(rs);
+		}
+
+		@Override
+		public String getSql() throws ORMException {
+			return scb2.getSql();
+		}
+
+		@Override
+		public void setParams(PreparedStatement stm) throws SQLException, ORMException {
+			scb2.setParams(stm);
+		}
+	}
+	
 	public AbstractSqlMapper2() {
 		this(false, false);
 	}
@@ -162,21 +187,16 @@ extends AbstractMapper2<T, K, C>
 		}
 	}
 	
-	public Collection<T> getCollectionForCb(GetQueryCallback<T> cb) throws ORMException {
+	protected void executeSelect(SelectQueryCallback scb) throws ORMException {
 		Connection cnn = ctx.getConnection(getConnectionKey(), false);
 		try {
-			PreparedStatement stm = cnn.prepareStatement(cb.getSql());
+			PreparedStatement stm = cnn.prepareStatement(scb.getSql());
 			try {
-				cb.setParams(stm, null);
-				ResultSet rs = stm.executeQuery();
-				List<T> all = new ArrayList<T>();
+				scb.setParams(stm);
+				final ResultSet rs = stm.executeQuery();
 				while (rs.next()) {
-					all.add(loadObject(rs));
+					scb.onRow(rs);
 				}
-				if (getComparator() != null) {
-					Collections.sort(all, getComparator());
-				}
-				return all;
 			} finally {
 				stm.close();
 			}
@@ -185,6 +205,44 @@ extends AbstractMapper2<T, K, C>
 		} finally {
 			ctx.releaseConnection(cnn);
 		}		
+	}
+	
+	public Collection<T> getCollectionForCb(final GetQueryCallback<T> cb) throws ORMException {
+		return getCollection(new ExecCallback() {
+			@Override
+			public String getSql() throws ORMException {
+				return cb.getSql();
+			}
+
+			@Override
+			public void setParams(PreparedStatement stm) throws SQLException, ORMException {
+				cb.setParams(stm, null);
+			}		
+		});
+	}
+
+	public Collection<T> getCollection(final ExecCallback cb) throws ORMException {
+		final List<T> all = new ArrayList<T>();
+		executeSelect(new SelectQueryCallback() {
+			@Override
+			public String getSql() throws ORMException {
+				return cb.getSql();
+			}
+
+			@Override
+			public void onRow(ResultSet rs) throws ORMException, SQLException {
+				all.add(loadObject(rs));
+			}
+
+			@Override
+			public void setParams(PreparedStatement stm) throws SQLException, ORMException {
+				cb.setParams(stm);
+			}
+		});
+		if (getComparator() != null) {
+			Collections.sort(all, getComparator());
+		}
+		return all;
 	}
 
 	protected abstract void setSelectAllStatementParams(PreparedStatement stm)
@@ -330,5 +388,28 @@ extends AbstractMapper2<T, K, C>
 
 	protected long getSqNextNumberLong(String sqName) throws ORMException {
 		return getSqNextNumberLong(sqName, SqlDialect.ORACLE);
+	}
+
+	protected void executeNonResult(ExecCallback ecb, boolean mutable) throws ORMException {
+		Connection cnn = ctx.getConnection(getConnectionKey(), false);
+		try {
+			PreparedStatement stm = cnn.prepareStatement(ecb.getSql());
+			try {
+				ecb.setParams(stm);
+				stm.execute();
+			} finally {
+				stm.close();
+			}
+		} catch (SQLException e) {
+			throw new ORMException(e);
+		} finally {
+			ctx.releaseConnection(cnn);
+		}			
+	}
+
+	public <S> S getScalar(final GetScalarCallback<S> cb) throws ORMException {
+		final GetScalarCallbackImpl<S> scb = new GetScalarCallbackImpl<S>(cb);
+		executeSelect(scb);
+		return scb.value;
 	}
 }
