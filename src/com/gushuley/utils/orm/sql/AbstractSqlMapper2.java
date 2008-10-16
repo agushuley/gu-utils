@@ -391,9 +391,9 @@ extends AbstractMapper2<T, K, C>
 	}
 
 	protected void executeNonResult(ExecCallback ecb, boolean mutable) throws ORMException {
-		Connection cnn = ctx.getConnection(getConnectionKey(), false);
+		final Connection cnn = ctx.getConnection(getConnectionKey(), mutable);
 		try {
-			PreparedStatement stm = cnn.prepareStatement(ecb.getSql());
+			final PreparedStatement stm = cnn.prepareStatement(ecb.getSql());
 			try {
 				ecb.setParams(stm);
 				stm.execute();
@@ -407,7 +407,7 @@ extends AbstractMapper2<T, K, C>
 		}			
 	}
 
-	public <S> S getScalar(final GetScalarCallback<S> cb) throws ORMException {
+	protected <S> S getScalar(final GetScalarCallback<S> cb) throws ORMException {
 		final GetScalarCallbackImpl<S> scb = new GetScalarCallbackImpl<S>(cb);
 		executeSelect(scb);
 		return scb.value;
