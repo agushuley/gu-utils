@@ -125,7 +125,7 @@ implements ORMContext {
 					throw new ORMException("Class " + forClass + " not implements Mapper2 interface");
 				}
 			}
-			objectClass = (Class<C>) objectClass.getSuperclass();
+			objectClass = objectClass.getSuperclass();
 		}
 		
 		throw new ORMException("Cannot find mapper for class: " + forClass.getName());		

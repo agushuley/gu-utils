@@ -8,7 +8,6 @@ public class ORMObjectsListWrapper<T> extends
 		super(owner, inner, ro);
 	}
 
-	@SuppressWarnings("unchecked")
 	protected List<T> getList() {
 		return (List<T>) getInner();
 	}

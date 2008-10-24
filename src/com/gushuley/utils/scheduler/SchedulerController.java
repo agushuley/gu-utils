@@ -58,7 +58,6 @@ implements SchedulerControllerMBean
 		return job;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void startJob(String jobId) throws Exception {
 		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni());
 		try {

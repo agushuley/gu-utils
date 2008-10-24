@@ -29,10 +29,9 @@ public final class ServiceLocator {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <C> C getObjectInterface(Class<C> _class, ObjectName name) {
 		// Checking is instance MBean existing on server
-		Set<ObjectInstance> list = locateServer().queryMBeans(name, null);
+		final Set<ObjectInstance> list = locateServer().queryMBeans(name, null);
 		if (list.size() == 0) {
 			return null;
 		}
