@@ -187,13 +187,34 @@ extends AbstractMapper2<T, K, C>
 		}
 	}
 	
-	protected void executeSelect(SelectQueryCallback scb) throws ORMException {
-		Connection cnn = ctx.getConnection(getConnectionKey(), false);
+	protected void executeSelect(final SelectQueryCallback scb) throws ORMException {
+		final Connection cnn = ctx.getConnection(getConnectionKey(), false);
 		try {
 			PreparedStatement stm = cnn.prepareStatement(scb.getSql());
 			try {
 				scb.setParams(stm);
 				final ResultSet rs = stm.executeQuery();
+				while (rs.next()) {
+					scb.onRow(rs);
+				}
+			} finally {
+				stm.close();
+			}
+		} catch (SQLException e) {
+			throw new ORMException(e);
+		} finally {
+			ctx.releaseConnection(cnn);
+		}		
+	}
+	
+	protected void executeSelect(final SelectCsQueryCallback scb) throws ORMException {
+		final Connection cnn = ctx.getConnection(getConnectionKey(), false);
+		try {
+			final CallableStatement stm = cnn.prepareCall(scb.getSql());
+			try {
+				scb.setParams(stm);
+				stm.execute();
+				final ResultSet rs = scb.getResultSet(stm);
 				while (rs.next()) {
 					scb.onRow(rs);
 				}
@@ -411,5 +432,23 @@ extends AbstractMapper2<T, K, C>
 		final GetScalarCallbackImpl<S> scb = new GetScalarCallbackImpl<S>(cb);
 		executeSelect(scb);
 		return scb.value;
+	}
+
+	protected <S> S getScalar(final GetCsScalarCallback<S> cb, boolean mutable) throws ORMException {
+		final Connection cnn = ctx.getConnection(getConnectionKey(), mutable);
+		try {
+			final CallableStatement stm = cnn.prepareCall(cb.getSql());
+			try {
+				cb.setParams(stm);
+				stm.execute();
+				return cb.getValue(stm);
+			} finally {
+				stm.close();
+			}
+		} catch (SQLException e) {
+			throw new ORMException(e);
+		} finally {
+			ctx.releaseConnection(cnn);
+		}			
 	}
 }
