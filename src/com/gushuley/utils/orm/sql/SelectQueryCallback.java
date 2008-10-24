@@ -5,7 +5,7 @@ import java.sql.*;
 import com.gushuley.utils.orm.ORMException;
 
 public interface SelectQueryCallback
-extends ExecCallback
+extends ExecCallback<PreparedStatement>
 {
 	void onRow(ResultSet rs) throws ORMException, SQLException ;
 }

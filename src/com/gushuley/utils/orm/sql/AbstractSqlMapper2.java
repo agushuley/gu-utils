@@ -229,7 +229,7 @@ extends AbstractMapper2<T, K, C>
 	}
 	
 	public Collection<T> getCollectionForCb(final GetQueryCallback<T> cb) throws ORMException {
-		return getCollection(new ExecCallback() {
+		return getCollection(new ExecCallback<PreparedStatement>() {
 			@Override
 			public String getSql() throws ORMException {
 				return cb.getSql();
@@ -242,7 +242,7 @@ extends AbstractMapper2<T, K, C>
 		});
 	}
 
-	public Collection<T> getCollection(final ExecCallback cb) throws ORMException {
+	public Collection<T> getCollection(final ExecCallback<PreparedStatement> cb) throws ORMException {
 		final List<T> all = new ArrayList<T>();
 		executeSelect(new SelectQueryCallback() {
 			@Override
@@ -258,6 +258,35 @@ extends AbstractMapper2<T, K, C>
 			@Override
 			public void setParams(PreparedStatement stm) throws SQLException, ORMException {
 				cb.setParams(stm);
+			}
+		});
+		if (getComparator() != null) {
+			Collections.sort(all, getComparator());
+		}
+		return all;
+	}
+
+	public Collection<T> getCollection(final SelectCsQueryCallback cb) throws ORMException {
+		final List<T> all = new ArrayList<T>();
+		executeSelect(new SelectCsQueryCallback() {
+			@Override
+			public String getSql() throws ORMException {
+				return cb.getSql();
+			}
+
+			@Override
+			public void onRow(ResultSet rs) throws ORMException, SQLException {
+				all.add(loadObject(rs));
+			}
+
+			@Override
+			public void setParams(PreparedStatement stm) throws SQLException, ORMException {
+				cb.setParams(stm);
+			}
+
+			@Override
+			public ResultSet getResultSet(CallableStatement stm) throws ORMException, SQLException {
+				return cb.getResultSet(stm);
 			}
 		});
 		if (getComparator() != null) {
@@ -411,7 +440,7 @@ extends AbstractMapper2<T, K, C>
 		return getSqNextNumberLong(sqName, SqlDialect.ORACLE);
 	}
 
-	protected void executeNonResult(ExecCallback ecb, boolean mutable) throws ORMException {
+	protected void executeNonResult(ExecCallback<PreparedStatement> ecb, boolean mutable) throws ORMException {
 		final Connection cnn = ctx.getConnection(getConnectionKey(), mutable);
 		try {
 			final PreparedStatement stm = cnn.prepareStatement(ecb.getSql());

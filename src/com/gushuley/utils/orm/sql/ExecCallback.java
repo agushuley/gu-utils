@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import com.gushuley.utils.orm.ORMException;
 
-public interface ExecCallback {
+public interface ExecCallback<S extends PreparedStatement> {
 	String getSql() throws ORMException;
-	void setParams(PreparedStatement stm) throws SQLException, ORMException;
+	void setParams(S stm) throws SQLException, ORMException;
 }
