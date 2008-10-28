@@ -38,7 +38,7 @@ extends AbstractSqlMapper2<JobDef, String, SchedulerContext>
 
 	@Override
 	protected String getSelectAllSql() {
-		return "SELECT sch_id, sch_sch, sch_hour, sch_min, SCH_JOB_CLASS, SCH_DAY_MASK, SCH_props, sch_type " + ctx.getDbScheme() + "FROM gu_schedules_v WHERE sch_sch = ? ";
+		return "SELECT sch_id, sch_sch, sch_hour, sch_min, SCH_JOB_CLASS, SCH_DAY_MASK, SCH_props, sch_type FROM " + ctx.getDbScheme() + "gu_schedules_v WHERE sch_sch = ? ";
 	}
 
 	@Override
@@ -49,13 +49,14 @@ extends AbstractSqlMapper2<JobDef, String, SchedulerContext>
 
 	@Override
 	protected String getSelectSql() {
-		return "SELECT sch_id, sch_sch, sch_hour, sch_min, SCH_JOB_CLASS, SCH_DAY_MASK, SCH_props, sch_type " + ctx.getDbScheme() + "FROM gu_schedules_v WHERE sch_id = ?";
+		return "SELECT sch_id, sch_sch, sch_hour, sch_min, SCH_JOB_CLASS, SCH_DAY_MASK, SCH_props, sch_type FROM " + ctx.getDbScheme() + "gu_schedules_v WHERE sch_id = ? AND sch_sch = ? ";
 	}
 
 	@Override
 	protected void setSelectStatementParams(PreparedStatement stm, String id)
 			throws SQLException {
 		stm.setString(1, id);
+		stm.setString(2, ctx.getScheduler());
 	}
 
 	@Override

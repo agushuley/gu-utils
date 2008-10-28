@@ -100,30 +100,12 @@ implements JobDone.Mapper
 
 			@Override
 			public String getSql() throws ORMException {
-				return "SELECT MAX(scd_id) max " + ctx.getDbScheme() + "gu_schedules_done_v";
+				return "SELECT MAX(scd_id) max FROM " + ctx.getDbScheme() + "gu_schedules_done_v";
 			}
 
 			@Override
 			public void setParams(PreparedStatement stm) throws SQLException, ORMException { }
 		});
-	}
-
-	public JobDone getLastForJob(final String jobId) throws ORMException {
-		for (JobDone j : getCollectionForCb(new GetQueryCallback<JobDone>() {
-			public void executeStep(Connection cnn, JobDone obj) throws SQLException {
-			}
-
-			public String getSql() throws ORMException {
-				return "SELECT scd_sch_id, MAX(scd_date) AS scd_date FROM " + ctx.getDbScheme() + "schedules_done_v t WHERE t.scd_sch_id = ? GROUP BY scd_sch_id";
-			}
-
-			public void setParams(PreparedStatement stm, JobDone obj) throws SQLException, ORMException {
-				stm.setString(1, jobId);
-			}			
-		})) {
-			return j;
-		}
-		return null;
 	}
 
 	@Override
