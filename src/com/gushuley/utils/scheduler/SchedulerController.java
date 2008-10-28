@@ -22,7 +22,7 @@ implements SchedulerControllerMBean
 	private String baseName;
 
 	private JobMBean startJob(JobDef jobDef, Date date) throws InstantiationException, IllegalAccessException, ClassNotFoundException, JmxException {
-		JobMBean job =  (JobMBean) Thread.currentThread().getContextClassLoader().loadClass(jobDef.getClassName()).newInstance();
+		final JobMBean job =  (JobMBean) Thread.currentThread().getContextClassLoader().loadClass(jobDef.getClassName()).newInstance();
 		
 		job.setProperties(jobDef.getProperties());
 		job.addJobSuccesListener(new JobFinishListener() {
@@ -33,15 +33,15 @@ implements SchedulerControllerMBean
 					final Mapper2<JobDone, Integer, SchedulerContext> mapper = ctx.getMapper2(JobDone.class);
 					ctx.add(new JobDone(mapper.createKey(), new Date(), job.getName()));
 					ctx.commit();
-				}
-				catch (Exception ex) {}
-				finally {
+				} catch (Exception ex) { 
+					log.debug("Error commiting of finalizing job: " + job.getName());
+				} finally {
 					ctx.close();
 				}
 				
 			}
 		});
-		String jobName = baseName + ",jobId=" + jobDef.getKey();
+		final String jobName = baseName + ",jobId=" + jobDef.getKey();
 		log.debug("Starting job: " + jobName);
 
 		job.start(jobName, jobDef.getKey(), date);
