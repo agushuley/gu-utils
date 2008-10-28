@@ -21,7 +21,7 @@ implements JobDone.Mapper
 
 	@Override
 	public Integer createKey(ResultSet rs) throws SQLException {
-		return rs.getInt(rs.getInt("scd_id"));
+		return rs.getInt("scd_id");
 	}
 
 	@Override
