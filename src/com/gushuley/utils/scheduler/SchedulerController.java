@@ -34,7 +34,7 @@ implements SchedulerControllerMBean
 					ctx.add(new JobDone(mapper.createKey(), new Date(), job.getName()));
 					ctx.commit();
 				} catch (Exception ex) { 
-					log.debug("Error commiting of finalizing job: " + job.getName());
+					log.debug("Error commiting of finalizing job: " + job.getName(), ex);
 				} finally {
 					ctx.close();
 				}
