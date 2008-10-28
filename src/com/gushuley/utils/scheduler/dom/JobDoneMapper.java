@@ -1,24 +1,27 @@
 package com.gushuley.utils.scheduler.dom;
 
 import java.sql.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
 
 import com.gushuley.utils.Tools;
-import com.gushuley.utils.orm.ORMError;
-import com.gushuley.utils.orm.ORMException;
+import com.gushuley.utils.orm.*;
 import com.gushuley.utils.orm.sql.*;
 
 
-public class JobDoneMapper extends AbstractSqlMapper<JobDone, JobDoneKey>  implements JobDone.Mapper {
-	private final String BASE_SELECT = "SELECT scd_sch_id, scd_date FROM schedules_done";
-
+public class JobDoneMapper 
+extends AbstractSqlMapper2<JobDone, Integer, SchedulerContext>
+implements JobDone.Mapper 
+{
 	@Override
-	protected JobDone createInstance(JobDoneKey key, ResultSet rs) throws SQLException {
+	protected JobDone createInstance(Integer key, ResultSet rs) throws SQLException {
 		return new JobDone(key);
 	}
 
 	@Override
-	public JobDoneKey createKey(ResultSet rs) throws SQLException {
-		return new JobDoneKey(rs.getString("scd_sch_id"), rs.getTimestamp("scd_date"));
+	public Integer createKey(ResultSet rs) throws SQLException {
+		return rs.getInt(rs.getInt("scd_id"));
 	}
 
 	@Override
@@ -37,13 +40,17 @@ public class JobDoneMapper extends AbstractSqlMapper<JobDone, JobDoneKey>  imple
 			public void executeStep(Connection cnn, JobDone obj) throws SQLException {
 			}
 
+			/* begin gu_schedules_pkg.job_done(p_schedule => :p_schedule,
+                 p_job_id => :p_job_id, p_date => :p_date, p_id => :p_id); end; */
 			public String getSql() throws ORMException {
-				return "INSERT INTO schedules_done (scd_sch_id, scd_date) VALUES (?, ?)";
+				return "begin " + ctx.getDbScheme() + "gu_schedules_pkg.job_done(?, ?, ?, ?); end;";
 			}
 
 			public void setParams(PreparedStatement stm, JobDone obj) throws SQLException, ORMException {
-				stm.setString(1, obj.getKey().getJobId());
-				Tools.setTimestamp(stm, 2, obj.getKey().getDate());
+				stm.setString(1, ctx.getScheduler());
+				stm.setString(2, obj.getJobId());
+				Tools.setTimestamp(stm, 3, obj.getDate());
+				stm.setInt(4, obj.getKey());
 			}			
 		};
 	}
@@ -61,14 +68,12 @@ public class JobDoneMapper extends AbstractSqlMapper<JobDone, JobDoneKey>  imple
 	
 	@Override
 	protected String getSelectSql() {
-		return BASE_SELECT + " WHERE scd_sch_id = ? AND scd_date = ?";
+		throw new ORMError("Unimplemented method");
 	}
 
 	@Override
-	protected void setSelectStatementParams(PreparedStatement stm, JobDoneKey id)
-			throws SQLException {
-		stm.setString(1, id.getJobId());
-		Tools.setTimestamp(stm, 2, id.getDate());
+	protected void setSelectStatementParams(PreparedStatement stm, Integer id) throws SQLException {
+		throw new ORMError("Unimplemented method");	
 	}
 	
 	@Override
@@ -81,8 +86,26 @@ public class JobDoneMapper extends AbstractSqlMapper<JobDone, JobDoneKey>  imple
 			ORMException {
 	}
 
-	public JobDoneKey createKey() throws ORMException {
-		throw new ORMError("Unimplemented method");
+	public Integer createKey() throws ORMException {
+		return getScalar(new GetScalarCallback<Integer>() {
+			@Override
+			public Integer getNull() {
+				return 1;
+			}
+
+			@Override
+			public Integer getValue(ResultSet rs) throws SQLException {
+				return rs.getInt("max") + 1;
+			}
+
+			@Override
+			public String getSql() throws ORMException {
+				return "SELECT MAX(scd_id) max " + ctx.getDbScheme() + "gu_schedules_done_v";
+			}
+
+			@Override
+			public void setParams(PreparedStatement stm) throws SQLException, ORMException { }
+		});
 	}
 
 	public JobDone getLastForJob(final String jobId) throws ORMException {
@@ -91,7 +114,7 @@ public class JobDoneMapper extends AbstractSqlMapper<JobDone, JobDoneKey>  imple
 			}
 
 			public String getSql() throws ORMException {
-				return "SELECT scd_sch_id, MAX(scd_date) AS scd_date FROM schedules_done t WHERE t.scd_sch_id = ? GROUP BY scd_sch_id";
+				return "SELECT scd_sch_id, MAX(scd_date) AS scd_date FROM " + ctx.getDbScheme() + "schedules_done_v t WHERE t.scd_sch_id = ? GROUP BY scd_sch_id";
 			}
 
 			public void setParams(PreparedStatement stm, JobDone obj) throws SQLException, ORMException {
@@ -101,6 +124,27 @@ public class JobDoneMapper extends AbstractSqlMapper<JobDone, JobDoneKey>  imple
 			return j;
 		}
 		return null;
+	}
+
+	@Override
+	public Collection<JobDone> getJobDoneDayAndAfter(Date date, String jobId) throws ORMException {
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		return getCollection(new ExecCallback<PreparedStatement>() {
+			@Override
+			public String getSql() throws ORMException {
+				return "SELECT scd_id, scd_sch, scd_job_id, scd_done_date FROM " + ctx.getDbScheme() + "gu_schedules_done_v WHERE scd_done_date >= ?";
+			}
+
+			@Override
+			public void setParams(PreparedStatement stm) throws SQLException, ORMException {
+				Tools.setTimestamp(stm, 1, cal.getTime());
+			}
+		});
 	}
 
 }

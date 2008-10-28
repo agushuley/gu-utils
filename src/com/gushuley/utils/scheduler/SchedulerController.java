@@ -17,15 +17,9 @@ import com.gushuley.utils.scheduler.dom.*;
 public class SchedulerController extends ThreadedService
 implements SchedulerControllerMBean 
 {	
-
+	private String scheduler;
+	private String dbScheme;
 	private String baseName;
-	public String getBaseName() {
-		return baseName;
-	}
-
-	public void setBaseName(String name) {
-		baseName = name;
-	}
 
 	private JobMBean startJob(JobDef jobDef, Date date) throws InstantiationException, IllegalAccessException, ClassNotFoundException, JmxException {
 		JobMBean job =  (JobMBean) Thread.currentThread().getContextClassLoader().loadClass(jobDef.getClassName()).newInstance();
@@ -34,14 +28,10 @@ implements SchedulerControllerMBean
 		job.addJobSuccesListener(new JobFinishListener() {
 			public void jobFinished(JobMBean job) {
 				log.debug("Job finished: " + job.getName());
-				SchedulerContext ctx = new SchedulerContext(getDatabaseJdni());
+				SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
 				try {
-					Mapper<JobDone, JobDoneKey> mapper = ctx.getMapper(JobDone.class);
-					JobDoneKey key = new JobDoneKey(job.getJobId(), job.getDate());
-					if (mapper.getById(key) == null) {
-						JobDone d = new JobDone(key);
-						mapper.add(d);
-					}
+					final Mapper2<JobDone, Integer, SchedulerContext> mapper = ctx.getMapper2(JobDone.class);
+					ctx.add(new JobDone(mapper.createKey(), new Date(), job.getName()));
 					ctx.commit();
 				}
 				catch (Exception ex) {}
@@ -59,7 +49,7 @@ implements SchedulerControllerMBean
 	}
 	
 	public void startJob(String jobId) throws Exception {
-		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni());
+		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
 		try {
 			JobDef def = ctx.find(JobDef.class, jobId);
 			if (def == null) {
@@ -127,7 +117,7 @@ implements SchedulerControllerMBean
 		today.set(Calendar.SECOND, 0);
 		today.set(Calendar.MILLISECOND, 0);
 
-		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni());
+		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
 		try {
 			for (JobDef jobDef : ctx.getMapper(JobDef.class).getAll()) {
 				String jobBeanName = getBaseName() + ",jobId=" + jobDef.getKey(); 
@@ -140,12 +130,11 @@ implements SchedulerControllerMBean
 				{
 					JobMBean job = ServiceLocator.getObjectInterface(JobMBean.class, jobBeanName);			
 					if (job == null) {
-						JobDone done = ((JobDone.Mapper)ctx.getMapper(JobDone.class)).getLastForJob(jobDef.getKey());
-						if (done == null || done.getKey().getDate().before(today.getTime())) {
+						Collection<JobDone> done = ctx.getMapper(JobDone.class, JobDone.Mapper.class).getJobDoneDayAndAfter(new Date(), jobDef.getKey());
+						if (done.isEmpty()) {
 							try {
 								job = startJob(jobDef, today.getTime());
-							}
-							catch (Throwable e) {
+							} catch (Throwable e) {
 								log.error("", e);
 							}
 						}
@@ -179,4 +168,25 @@ implements SchedulerControllerMBean
 	public void onStart() {
 		setSleepTime(1000 * 60);
 	}	
+
+	public String getDbScheme() {
+		return dbScheme;
+	}
+	public void setDbScheme(String dbScheme) {
+		this.dbScheme = dbScheme;
+	}
+
+	public String getScheduler() {
+		return scheduler;
+	}
+	public void setScheduler(String scheduler) {
+		this.scheduler = scheduler;
+	}
+	
+	public String getBaseName() {
+		return baseName;
+	}
+	public void setBaseName(String name) {
+		baseName = name;
+	}
 }

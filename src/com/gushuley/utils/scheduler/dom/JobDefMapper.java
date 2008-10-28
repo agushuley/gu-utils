@@ -7,9 +7,9 @@ import com.gushuley.utils.orm.ORMException;
 import com.gushuley.utils.orm.sql.*;
 
 
-public class JobDefMapper extends AbstractSqlMapper<JobDef, String> {
-	private final String BASE_SELECT = "SELECT sch_id, sch_hour, sch_min, SCH_JOB_CLASS, SCH_DAY_MASK, SCH_props, sch_type FROM schedules";
-
+public class JobDefMapper 
+extends AbstractSqlMapper2<JobDef, String, SchedulerContext> 
+{
 	@Override
 	protected JobDef createInstance(String key, ResultSet rs)
 			throws SQLException {
@@ -38,17 +38,18 @@ public class JobDefMapper extends AbstractSqlMapper<JobDef, String> {
 
 	@Override
 	protected String getSelectAllSql() {
-		return BASE_SELECT;
+		return "SELECT sch_id, sch_sch, sch_hour, sch_min, SCH_JOB_CLASS, SCH_DAY_MASK, SCH_props, sch_type " + ctx.getDbScheme() + "FROM gu_schedules_v WHERE sch_sch = ? ";
 	}
 
 	@Override
 	protected void setSelectAllStatementParams(PreparedStatement stm)
-			throws ORMException {
+			throws ORMException, SQLException {
+		stm.setString(1, ctx.getScheduler());
 	}
 
 	@Override
 	protected String getSelectSql() {
-		return BASE_SELECT + " WHERE sch_id = ?";
+		return "SELECT sch_id, sch_sch, sch_hour, sch_min, SCH_JOB_CLASS, SCH_DAY_MASK, SCH_props, sch_type " + ctx.getDbScheme() + "FROM gu_schedules_v WHERE sch_id = ?";
 	}
 
 	@Override
