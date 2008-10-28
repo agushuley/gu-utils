@@ -296,7 +296,7 @@ extends AbstractMapper2<T, K, C>
 	}
 
 	protected abstract void setSelectAllStatementParams(PreparedStatement stm)
-			throws ORMException;
+			throws ORMException, SQLException;
 
 	protected abstract String getSelectAllSql();
 

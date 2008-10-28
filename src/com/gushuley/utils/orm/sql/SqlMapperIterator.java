@@ -35,7 +35,7 @@ public class SqlMapperIterator<T extends ORMObject<K>, K> {
 	protected String getSelectSqlText() {
 		return mapper.getSelectAllSql();
 	}
-	protected void setParams(PreparedStatement stm) throws ORMException {
+	protected void setParams(PreparedStatement stm) throws ORMException, SQLException {
 		mapper.setSelectAllStatementParams(stm);
 	}
 	
