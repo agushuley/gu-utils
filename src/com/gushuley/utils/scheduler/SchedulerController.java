@@ -31,7 +31,7 @@ implements SchedulerControllerMBean
 				SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
 				try {
 					final Mapper2<JobDone, Integer, SchedulerContext> mapper = ctx.getMapper2(JobDone.class);
-					ctx.add(new JobDone(mapper.createKey(), new Date(), job.getName()));
+					ctx.add(new JobDone(mapper.createKey(), new Date(), job.getJobId()));
 					ctx.commit();
 				} catch (Exception ex) { 
 					log.debug("Error commiting of finalizing job: " + job.getName(), ex);
