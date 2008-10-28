@@ -22,4 +22,12 @@ public interface SchedulerControllerMBean extends ServiceMBean {
 
 	void startJob(String jobId) throws Exception;
 	void stopJob(String jobId) throws JmxException;
+
+	public String getDbScheme();
+
+	public void setDbScheme(String dbScheme);
+
+	public String getScheduler();
+
+	public void setScheduler(String scheduler);
 }

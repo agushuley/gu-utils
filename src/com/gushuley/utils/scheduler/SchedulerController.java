@@ -17,8 +17,8 @@ import com.gushuley.utils.scheduler.dom.*;
 public class SchedulerController extends ThreadedService
 implements SchedulerControllerMBean 
 {	
-	private String scheduler;
-	private String dbScheme;
+	String scheduler;
+	String dbScheme;
 	private String baseName;
 
 	private JobMBean startJob(JobDef jobDef, Date date) throws InstantiationException, IllegalAccessException, ClassNotFoundException, JmxException {
