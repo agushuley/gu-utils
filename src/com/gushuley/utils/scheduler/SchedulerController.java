@@ -119,7 +119,7 @@ implements SchedulerControllerMBean
 
 		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
 		try {
-			for (JobDef jobDef : ctx.getMapper(JobDef.class).getAll()) {
+			for (JobDef jobDef : ctx.getMapper2(JobDef.class).getAll()) {
 				String jobBeanName = getBaseName() + ",jobId=" + jobDef.getKey(); 
 				int desiredTime = jobDef.getStartHour() * 100 + jobDef.getStartMinute();
 
