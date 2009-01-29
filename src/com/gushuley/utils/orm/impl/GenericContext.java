@@ -58,7 +58,7 @@ implements ORMContext {
 			} catch (NamingException e) {
 				throw new ORMException(e);
 			} catch (SQLException e) {				
-				throw new ORMException(e);
+				throw parseException(e);
 			}
 		}
 	}
@@ -85,7 +85,7 @@ implements ORMContext {
 						w.rollback();
 						w.close();
 					} catch (SQLException e) {
-						throw new ORMException(e);
+						throw parseException(e);
 					}
 				}
 			}		
@@ -156,7 +156,7 @@ implements ORMContext {
 				try {
 					cnn.commit();
 				} catch (SQLException e) {
-					throw new ORMException(e);
+					throw parseException(e);
 				}
 			}
 		}
@@ -250,5 +250,10 @@ implements ORMContext {
 	}
 	
 	protected void validateConnection(String key, Connection cnn) throws ORMException {
+	}
+	
+
+	public ORMException parseException(SQLException ex) {
+		return new ORMException(ex);
 	}
 }

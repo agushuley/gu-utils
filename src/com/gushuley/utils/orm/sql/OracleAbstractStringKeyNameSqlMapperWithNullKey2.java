@@ -2,12 +2,11 @@ package com.gushuley.utils.orm.sql;
 
 import java.sql.*;
 
-import com.gushuley.utils.orm.ORMContext;
 import com.gushuley.utils.orm.ORMException;
 import com.gushuley.utils.orm.impl.*;
 
 
-public abstract class OracleAbstractStringKeyNameSqlMapperWithNullKey2<C extends AbstractStringKeyNameObject, X extends ORMContext>
+public abstract class OracleAbstractStringKeyNameSqlMapperWithNullKey2<C extends AbstractStringKeyNameObject, X extends GenericContext>
 extends AbstractKeyNameSqlMapper2<C, String, X> 
 {
 

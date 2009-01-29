@@ -6,9 +6,10 @@ import java.util.*;
 import com.gushuley.utils.orm.*;
 import com.gushuley.utils.orm.ORMObject.State;
 import com.gushuley.utils.orm.impl.AbstractMapper2;
+import com.gushuley.utils.orm.impl.GenericContext;
 
 
-public abstract class AbstractSqlMapper2<T extends ORMObject<K>, K, C extends ORMContext>
+public abstract class AbstractSqlMapper2<T extends ORMObject<K>, K, C extends GenericContext>
 extends AbstractMapper2<T, K, C> 
 {
 	private class GetScalarCallbackImpl<S> implements SelectQueryCallback {
@@ -222,7 +223,7 @@ extends AbstractMapper2<T, K, C>
 				stm.close();
 			}
 		} catch (SQLException e) {
-			throw new ORMException(e);
+			throw ctx.parseException(e);
 		} finally {
 			ctx.releaseConnection(cnn);
 		}		
@@ -451,7 +452,7 @@ extends AbstractMapper2<T, K, C>
 				stm.close();
 			}
 		} catch (SQLException e) {
-			throw new ORMException(e);
+			throw ctx.parseException(e);
 		} finally {
 			ctx.releaseConnection(cnn);
 		}			
@@ -475,7 +476,7 @@ extends AbstractMapper2<T, K, C>
 				stm.close();
 			}
 		} catch (SQLException e) {
-			throw new ORMException(e);
+			throw ctx.parseException(e);
 		} finally {
 			ctx.releaseConnection(cnn);
 		}			

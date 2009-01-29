@@ -7,14 +7,15 @@ import java.util.*;
 import org.apache.log4j.Logger;
 
 import com.gushuley.utils.orm.*;
+import com.gushuley.utils.orm.impl.GenericContext;
 
 public class SqlMapperIterator<T extends ORMObject<K>, K> {
 	private final static Logger log = Logger.getLogger(SqlMapperIterator.class);
 	private ResultSet rs;
 	private PreparedStatement stm;
-	private AbstractSqlMapper<T, K> mapper;
+	private AbstractSqlMapper2<T, K, GenericContext> mapper;
 
-	public SqlMapperIterator(AbstractSqlMapper<T, K> mapper)
+	public SqlMapperIterator(AbstractSqlMapper2<T, K, GenericContext> mapper)
 			throws ORMException {
 		this.mapper = mapper;
 		Connection cnn = mapper.getContext().
@@ -55,7 +56,7 @@ public class SqlMapperIterator<T extends ORMObject<K>, K> {
 			}
 			return list;
 		} catch (SQLException e) {
-			throw new ORMException(e);
+			throw mapper.getContext().parseException(e);
 		}				
 	}		
 }
