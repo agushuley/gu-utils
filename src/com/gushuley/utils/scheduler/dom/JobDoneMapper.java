@@ -95,12 +95,12 @@ implements JobDone.Mapper
 
 			@Override
 			public Integer getValue(ResultSet rs) throws SQLException {
-				return rs.getInt("max") + 1;
+				return rs.getInt("max_id") + 1;
 			}
 
 			@Override
 			public String getSql() throws ORMException {
-				return "SELECT MAX(scd_id) max FROM " + ctx.getDbScheme() + "gu_schedules_done_v";
+				return "SELECT MAX(scd_id) AS max_id FROM " + ctx.getDbScheme() + "gu_schedules_done_v";
 			}
 
 			@Override
