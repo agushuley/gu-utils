@@ -19,7 +19,7 @@ public class SchedulerContext extends GenericContext {
 
 	public String getDbScheme() {
 		if (Tools.isEmpty(dbScheme)) {
-			return dbScheme;
+			return "";
 		} else if (!dbScheme.trim().endsWith(".")) {
 			return dbScheme + ".";
 		} else {
