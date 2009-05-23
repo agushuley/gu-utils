@@ -11,15 +11,18 @@ import org.apache.log4j.Logger;
 import com.gushuley.utils.Tools;
 import com.gushuley.utils.jmx.*;
 import com.gushuley.utils.orm.*;
+import com.gushuley.utils.orm.sql.SqlDialect;
 import com.gushuley.utils.scheduler.dom.*;
 
 
 public class SchedulerController extends ThreadedService
 implements SchedulerControllerMBean 
 {	
-	String scheduler;
-	String dbScheme;
+	private String scheduler;
+	private String dbScheme;
 	private String baseName;
+	private SqlDialect sqlDialect = SqlDialect.ORACLE;
+	private String jobDoneUpdateProc = "gu_schedules_pkg.job_done";
 
 	private JobMBean startJob(JobDef jobDef, Date date) throws InstantiationException, IllegalAccessException, ClassNotFoundException, JmxException {
 		final JobMBean job =  (JobMBean) Thread.currentThread().getContextClassLoader().loadClass(jobDef.getClassName()).newInstance();
@@ -28,13 +31,13 @@ implements SchedulerControllerMBean
 		job.addJobSuccesListener(new JobFinishListener() {
 			public void jobFinished(JobMBean job) {
 				log.debug("Job finished: " + job.getName());
-				SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
+				SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme(), jobDoneUpdateProc, sqlDialect);
 				try {
 					final Mapper2<JobDone, Integer, SchedulerContext> mapper = ctx.getMapper2(JobDone.class);
 					ctx.add(new JobDone(mapper.createKey(), new Date(), job.getJobId()));
 					ctx.commit();
 				} catch (Exception ex) { 
-					log.debug("Error commiting of finalizing job: " + job.getName(), ex);
+					log.error("Error commiting of finalizing job: " + job.getName(), ex);
 				} finally {
 					ctx.close();
 				}
@@ -49,7 +52,7 @@ implements SchedulerControllerMBean
 	}
 	
 	public void startJob(String jobId) throws Exception {
-		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
+		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme(), jobDoneUpdateProc, sqlDialect);
 		try {
 			JobDef def = ctx.find(JobDef.class, jobId);
 			if (def == null) {
@@ -117,7 +120,7 @@ implements SchedulerControllerMBean
 		today.set(Calendar.SECOND, 0);
 		today.set(Calendar.MILLISECOND, 0);
 
-		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme());
+		SchedulerContext ctx = new SchedulerContext(getDatabaseJdni(), getScheduler(), getDbScheme(), jobDoneUpdateProc, sqlDialect);
 		try {
 			for (JobDef jobDef : ctx.getMapper2(JobDef.class).getAll()) {
 				String jobBeanName = getBaseName() + ",jobId=" + jobDef.getKey(); 
@@ -188,5 +191,23 @@ implements SchedulerControllerMBean
 	}
 	public void setBaseName(String name) {
 		baseName = name;
+	}
+
+	@Override
+	public String getSqlDialect() {
+		return sqlDialect.toString();
+	}
+
+	@Override
+	public void setSqlDialect(String sqlDialect) {
+		this.sqlDialect = SqlDialect.valueOf(sqlDialect);
+	}
+
+	public String getJobDoneUpdateProc() {
+		return jobDoneUpdateProc;
+	}
+
+	public void setJobDoneUpdateProc(String jobDoneUpdateProc) {
+		this.jobDoneUpdateProc = jobDoneUpdateProc;
 	}
 }

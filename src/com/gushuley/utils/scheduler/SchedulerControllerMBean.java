@@ -30,4 +30,10 @@ public interface SchedulerControllerMBean extends ServiceMBean {
 	public String getScheduler();
 
 	public void setScheduler(String scheduler);
+	
+	public String getSqlDialect();
+	public void setSqlDialect(String sqlDialect);
+
+	public String getJobDoneUpdateProc();
+	public void setJobDoneUpdateProc(String jobDoneUpdateProc);
 }

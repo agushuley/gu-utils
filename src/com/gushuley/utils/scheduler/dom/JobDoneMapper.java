@@ -43,7 +43,7 @@ implements JobDone.Mapper
 			/* begin gu_schedules_pkg.job_done(p_schedule => :p_schedule,
                  p_job_id => :p_job_id, p_date => :p_date, p_id => :p_id); end; */
 			public String getSql() throws ORMException {
-				return "begin " + ctx.getDbScheme() + "gu_schedules_pkg.job_done(?, ?, ?, ?); end;";
+				return OrmSqlTools.creteCallTxt(ctx.getSqlDialect(), ctx.getDbScheme() + ctx.getDoneUpdateProc(), "?, ?, ?, ?");
 			}
 
 			public void setParams(PreparedStatement stm, JobDone obj) throws SQLException, ORMException {
