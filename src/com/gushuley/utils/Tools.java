@@ -148,4 +148,21 @@ public final class Tools {
 		}
 		return target;
 	}
+	
+	public static String join(Object... strings) {
+		return joinS(",", strings);
+	}
+
+	public static String joinS(String separator, Object... strings) {
+		final StringBuffer b = new StringBuffer();
+		for (int i = 0; i < strings.length; i++) {
+			if (strings[i] != null) {
+				b.append(strings[i]);
+			}
+			if (i < strings.length - 1) {
+				b.append(separator);
+			}
+		}
+		return b.toString();
+	}
 }
