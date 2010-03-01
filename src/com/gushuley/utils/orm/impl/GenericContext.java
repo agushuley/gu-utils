@@ -18,6 +18,7 @@ implements ORMContext {
 		mappersForClasses = new HashMap<Class<? extends ORMObject<?>>, Class<? extends Mapper2<?,?,?>>>();
 	private final Logger log = Logger.getLogger(getClass());
 	private final Map<String, String> properties = new HashMap<String, String>();
+	private boolean closed = false;
 
 	public GenericContext(String... props) {
 		for (int i = 0; i < props.length / 2; i++) {
@@ -50,8 +51,8 @@ implements ORMContext {
 					cnn = new InstancesCountConnectionWrapper(i);
 					cnns.put(key, cnn);
 				}
-				if (isMutable) {
-					cnn.setMutable(isMutable);
+				if (isMutable || !closed) {
+					cnn.setPersist(true);
 				}
 				cnn.lock();
 				return cnn;
@@ -72,7 +73,7 @@ implements ORMContext {
 			for (Map.Entry<String, InstancesCountConnectionWrapper> e : cnns.entrySet()) {
 				if (e.getValue() == cnn) {
 					int r = e.getValue().release();
-					if (r == 0 && !e.getValue().isMutable()) {
+					if (r == 0 && !e.getValue().isPersist()) {
 						toRelease.add(e.getKey());
 					}
 				}
@@ -163,6 +164,7 @@ implements ORMContext {
 	}
 
 	public synchronized void close() {
+		closed = true;
 		for (final Mapper2<?,?,?> mapper : mappers.values()) {
 			mapper.clear();
 		}		
@@ -177,7 +179,7 @@ implements ORMContext {
 				}
 			}
 			cnns.clear();
-		}
+		}	
 	}
 
 	public <C extends ORMObject<?>, K> C find(Class<C> objectClass, K key) throws ORMException {
@@ -210,14 +212,14 @@ implements ORMContext {
 			super(inner);
 		}
 
-		private boolean mutable = false;
+		private boolean persist = false;
 		
-		public boolean isMutable() {
-			return mutable;
+		public boolean isPersist() {
+			return persist;
 		}
 
-		public void setMutable(boolean mutable) {
-			this.mutable = mutable;
+		public void setPersist(boolean persist) {
+			this.persist = persist;
 		}
 		
 		private int count = 0;
