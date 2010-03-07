@@ -10,6 +10,10 @@ import com.gushuley.utils.orm.impl.*;
 public abstract class AbstractStringKeyNameSqlMapper2<C extends AbstractStringKeyNameObject, X extends ORMContext>
 extends AbstractKeyNameSqlMapper2<C, String, GenericContext> 
 {
+	public AbstractStringKeyNameSqlMapper2(boolean _short, String string, String string2, String string3, SqlAttribute... attrs) {
+		super(_short, string, string2, string3, attrs);
+	}
+	
 	public AbstractStringKeyNameSqlMapper2(String string, String string2, String string3, SqlAttribute... attrs) {
 		super(string, string2, string3, attrs);
 	}

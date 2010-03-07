@@ -18,6 +18,15 @@ extends AbstractSqlMapper2<C, K, X>
 		this.attributes = attributes;
 	}
 
+	public AbstractKeyNameSqlMapper2(boolean short1, String table, String idColumn,
+			String nameColumn, SqlAttribute... attributes) {
+		super(short1);
+		this.aTableName = table;
+		this.idColumn = idColumn;
+		this.nameColumn = nameColumn;
+		this.attributes = attributes;
+	}
+
 	private final String aTableName;
 	protected final String idColumn;
 	protected final String nameColumn;

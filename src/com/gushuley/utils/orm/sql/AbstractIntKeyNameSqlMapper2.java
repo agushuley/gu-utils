@@ -8,10 +8,13 @@ import com.gushuley.utils.orm.impl.*;
 public abstract class AbstractIntKeyNameSqlMapper2<C extends AbstractIntKeyNameObject, X extends GenericContext> 
 extends AbstractKeyNameSqlMapper2<C, Integer, X> 
 {
+	public AbstractIntKeyNameSqlMapper2(boolean _short, String string, String string2, String string3, SqlAttribute... attrs) {
+		super(_short, string, string2, string3, attrs);
+	}
+	
 	public AbstractIntKeyNameSqlMapper2(String string, String string2, String string3, SqlAttribute... attrs) {
 		super(string, string2, string3, attrs);
 	}
-	
 
 	@Override
 	protected void setKeyValue(PreparedStatement stm, int n, Integer key) throws SQLException {

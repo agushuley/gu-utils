@@ -9,7 +9,10 @@ import com.gushuley.utils.orm.impl.*;
 public abstract class OracleAbstractStringKeyNameSqlMapperWithNullKey2<C extends AbstractStringKeyNameObject, X extends GenericContext>
 extends AbstractKeyNameSqlMapper2<C, String, X> 
 {
-
+	public OracleAbstractStringKeyNameSqlMapperWithNullKey2(boolean _short, String string, String string2, String string3, SqlAttribute... attrs) {
+		super(_short, string, string2, string3, attrs);
+	}
+	
 	public OracleAbstractStringKeyNameSqlMapperWithNullKey2(String string, String string2, String string3, SqlAttribute... attrs) {
 		super(string, string2, string3, attrs);
 	}
