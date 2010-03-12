@@ -51,8 +51,8 @@ implements ORMContext {
 					cnn = new InstancesCountConnectionWrapper(i);
 					cnns.put(key, cnn);
 				}
-				if (isMutable || !closed) {
-					cnn.setPersist(true);
+				if (isMutable) {
+					cnn.setMutable(true);
 				}
 				cnn.lock();
 				return cnn;
@@ -69,27 +69,17 @@ implements ORMContext {
 			if (!cnns.containsValue(cnn)) {
 				throw new ORMException("Connection is not owned by context");
 			}
-			Set<String> toRelease = new HashSet<String>();
 			for (Map.Entry<String, InstancesCountConnectionWrapper> e : cnns.entrySet()) {
 				if (e.getValue() == cnn) {
 					int r = e.getValue().release();
-					if (r == 0 && !e.getValue().isPersist()) {
-						toRelease.add(e.getKey());
+					if (closed) {
+						if (r == 0 && !e.getValue().isMutable()) {
+							cnns.entrySet().remove(e);
+							try { e.getValue().close(); } catch (SQLException e1) { }							
+						}
 					}
 				}
 			}
-			for (String key : toRelease) {
-				InstancesCountConnectionWrapper w = cnns.get(key);
-				if (w != null) {
-					cnns.remove(key);
-					try {
-						w.rollback();
-						w.close();
-					} catch (SQLException e) {
-						throw parseException(e);
-					}
-				}
-			}		
 		}
 	}
 
@@ -212,14 +202,14 @@ implements ORMContext {
 			super(inner);
 		}
 
-		private boolean persist = false;
+		private boolean mutable = false;
 		
-		public boolean isPersist() {
-			return persist;
+		public boolean isMutable() {
+			return mutable;
 		}
 
-		public void setPersist(boolean persist) {
-			this.persist = persist;
+		public void setMutable(boolean mutable) {
+			this.mutable = mutable;
 		}
 		
 		private int count = 0;
@@ -257,5 +247,17 @@ implements ORMContext {
 
 	public ORMException parseException(SQLException ex) {
 		return new ORMException(ex);
+	}
+	
+	@Override
+	public void releaseUnusedConnections() {
+		synchronized (cnns) {
+			for (Map.Entry<String, InstancesCountConnectionWrapper> e : cnns.entrySet()) {
+				if (!e.getValue().isMutable()) {
+					cnns.entrySet().remove(e);
+					try { e.getValue().close(); } catch (SQLException e1) { }
+				}
+			}
+		}
 	}
 }
