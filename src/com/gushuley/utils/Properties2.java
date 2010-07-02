@@ -30,7 +30,7 @@ public class Properties2 extends HashMap<String, String>{
 		while ((l = s.readLine()) != null) {
 			if (!Tools.isEmpty(l)) {
 				String[] p = l.split("=", 2);
-				put(p[0], p[1]);
+				put(p[0], p[1].replaceAll("\\n", "\n").replaceAll("\r", ""));
 			}
 		}
 	}
@@ -43,10 +43,12 @@ public class Properties2 extends HashMap<String, String>{
 	public String toString() {
 		final StringBuffer writer = new StringBuffer();
 		for (final Map.Entry<String, String> e : entrySet()) {
-			writer.append(e.getKey());
-			writer.append("=");
-			writer.append(e.getValue());
-			writer.append("\n");
+			if (!Tools.isEmpty(e.getValue())) {
+				writer.append(e.getKey());
+				writer.append("=");
+				writer.append(e.getValue().replaceAll("\r", "").replaceAll("\n", "\\n"));
+				writer.append("\n");
+			}
 		}
 		return writer.toString();
 	}
