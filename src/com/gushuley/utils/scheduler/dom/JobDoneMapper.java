@@ -111,7 +111,7 @@ implements JobDone.Mapper
 	}
 
 	@Override
-	public Collection<JobDone> getJobDoneDayAndAfter(Date date, String jobId) throws ORMException {
+	public Collection<JobDone> getJobDoneDayAndAfter(Date date, final String jobId) throws ORMException {
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		cal.set(Calendar.MILLISECOND, 0);
@@ -121,12 +121,14 @@ implements JobDone.Mapper
 		return getCollection(new ExecCallback<PreparedStatement>() {
 			@Override
 			public String getSql() throws ORMException {
-				return "SELECT scd_id, scd_sch, scd_job_id, scd_done_date FROM " + ctx.getDbScheme() + "gu_schedules_done_v WHERE scd_done_date >= ? AND scd_job_id = ?";
+				return "SELECT scd_id, scd_sch, scd_job_id, scd_done_date FROM " + ctx.getDbScheme() + "gu_schedules_done_v WHERE scd_done_date >= ? AND scd_job_id = ? AND scd_sch = ?";
 			}
 
 			@Override
 			public void setParams(PreparedStatement stm) throws SQLException, ORMException {
 				Tools.setTimestamp(stm, 1, cal.getTime());
+				stm.setString(2, jobId);
+				stm.setString(3, ctx.getScheduler());
 			}
 		});
 	}
