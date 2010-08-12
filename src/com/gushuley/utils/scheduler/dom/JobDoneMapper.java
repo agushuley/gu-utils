@@ -84,6 +84,8 @@ implements JobDone.Mapper
 	@Override
 	protected void loadInstance(JobDone obj, ResultSet rs) throws SQLException,
 			ORMException {
+		obj.setJobId(rs.getString("scd_job_id"));
+		obj.setDate(rs.getTimestamp("scd_done_date")); 
 	}
 
 	public Integer createKey() throws ORMException {
@@ -119,7 +121,7 @@ implements JobDone.Mapper
 		return getCollection(new ExecCallback<PreparedStatement>() {
 			@Override
 			public String getSql() throws ORMException {
-				return "SELECT scd_id, scd_sch, scd_job_id, scd_done_date FROM " + ctx.getDbScheme() + "gu_schedules_done_v WHERE scd_done_date >= ?";
+				return "SELECT scd_id, scd_sch, scd_job_id, scd_done_date FROM " + ctx.getDbScheme() + "gu_schedules_done_v WHERE scd_done_date >= ? AND scd_job_id = ?";
 			}
 
 			@Override
