@@ -20,12 +20,12 @@ implements ThreadedServiceMBean {
 		}	
 		
 		@Override
-		public void onRunStep() throws Throwable {
+		public void onRunStep() throws Error {
 			ThreadedService.this.onRunStep();
 		}
 	};
 
-	protected void onRunStep() throws Throwable {
+	protected void onRunStep() throws Error {
 	}
 
 	

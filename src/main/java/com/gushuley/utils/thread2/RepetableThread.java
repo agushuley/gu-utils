@@ -1,9 +1,11 @@
 package com.gushuley.utils.thread2;
 
-import java.util.*;
-import java.util.concurrent.locks.*;
+import org.apache.log4j.Logger;
 
-import org.apache.log4j.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RepetableThread implements RepeatableThreadControl, RepeatableRunner {
 	public RepetableThread() {
@@ -55,7 +57,9 @@ public class RepetableThread implements RepeatableThreadControl, RepeatableRunne
 					}
 					iteration++;
 					onRunStep();
-				} catch (Throwable t) {
+				} catch (Exception t) {
+					onException(t);
+				} catch (Error t) {
 					onException(t);
 				} finally {
 					if (!isStop && !isInterrupted()) {
@@ -193,7 +197,7 @@ public class RepetableThread implements RepeatableThreadControl, RepeatableRunne
 	}
 
 	private final RepeatableRunner runner;
-	public void onRunStep() throws Throwable {
+	public void onRunStep() throws Error {
 		if (runner != null) {
 			runner.onRunStep();
 		}

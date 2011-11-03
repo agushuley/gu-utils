@@ -1,18 +1,19 @@
 package com.gushuley.utils.scheduler;
 
-import java.util.*;
-
-import javax.management.ObjectInstance;
-
-
-
+import com.gushuley.utils.Tools;
+import com.gushuley.utils.jmx.JmxException;
+import com.gushuley.utils.jmx.ServiceLocator;
+import com.gushuley.utils.jmx.ThreadedService;
+import com.gushuley.utils.orm.Mapper2;
+import com.gushuley.utils.orm.ORMException;
+import com.gushuley.utils.orm.sql.SqlDialect;
+import com.gushuley.utils.scheduler.dom.JobDef;
+import com.gushuley.utils.scheduler.dom.JobDone;
+import com.gushuley.utils.scheduler.dom.SchedulerContext;
 import org.apache.log4j.Logger;
 
-import com.gushuley.utils.Tools;
-import com.gushuley.utils.jmx.*;
-import com.gushuley.utils.orm.*;
-import com.gushuley.utils.orm.sql.SqlDialect;
-import com.gushuley.utils.scheduler.dom.*;
+import javax.management.ObjectInstance;
+import java.util.*;
 
 
 public class SchedulerController extends ThreadedService
@@ -36,7 +37,7 @@ implements SchedulerControllerMBean
 					final Mapper2<JobDone, Integer, SchedulerContext> mapper = ctx.getMapper2(JobDone.class);
 					ctx.add(new JobDone(mapper.createKey(), new Date(), job.getJobId()));
 					ctx.commit();
-				} catch (Exception ex) { 
+				} catch (ORMException ex) {
 					log.error("Error commiting of finalizing job: " + job.getName(), ex);
 				} finally {
 					ctx.close();

@@ -1,10 +1,12 @@
 package com.gushuley.utils.scheduler;
 
-import java.util.*;
-
+import com.gushuley.utils.jmx.JmxException;
+import com.gushuley.utils.jmx.SelfManagedBean;
 import org.apache.log4j.Logger;
 
-import com.gushuley.utils.jmx.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 
 
 public abstract class Job extends SelfManagedBean implements JobMBean {
@@ -39,17 +41,11 @@ public abstract class Job extends SelfManagedBean implements JobMBean {
 				for (JobFinishListener l : successListeners) {
 					l.jobFinished(Job.this);
 				}
-			}
-			catch (RuntimeException e) {
+			} catch (Error e) {
 				log.error("Error executing of job " + jobId + ": " + e.getClass() + ": " + e.getMessage(), e);
-			}
-			catch (Error e) {
+			} catch (Exception e) {
 				log.error("Error executing of job " + jobId + ": " + e.getClass() + ": " + e.getMessage(), e);
-			}
-			catch (Throwable e) {
-				log.error("Error executing of job " + jobId + ": " + e.getClass() + ": " + e.getMessage());
-			}
-			finally {
+			} finally {
 				for (JobFinishListener l : finishedListeners) {
 					try {
 						l.jobFinished(Job.this);

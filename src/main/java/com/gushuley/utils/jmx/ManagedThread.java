@@ -27,13 +27,13 @@ public class ManagedThread extends SelfManagedBean implements ManagedThreadMBean
 		}		
 
 		@Override
-		public void onRunStep() throws Throwable {
+		public void onRunStep() throws Error {
 			ManagedThread.this.onRunStep();
 		}
 	};
 
 	private RepeatableRunner runner = null;
-	protected void onRunStep() throws Throwable {
+	protected void onRunStep() throws Error {
 		if (runner != null) {
 			runner.onRunStep();
 		}
