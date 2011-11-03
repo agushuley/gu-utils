@@ -1,18 +1,19 @@
 package com.gushuley.utils.orm.sql;
 
-import java.sql.*;
-import java.util.*;
-
-import com.gushuley.utils.orm.*;
+import com.gushuley.utils.orm.ORMException;
+import com.gushuley.utils.orm.ORMObject;
 import com.gushuley.utils.orm.ORMObject.State;
 import com.gushuley.utils.orm.impl.AbstractMapper2;
 import com.gushuley.utils.orm.impl.GenericContext;
+
+import java.sql.*;
+import java.util.*;
 
 
 public abstract class AbstractSqlMapper2<T extends ORMObject<K>, K, C extends GenericContext>
 extends AbstractMapper2<T, K, C> 
 {
-	private class GetScalarCallbackImpl<S> implements SelectQueryCallback {
+	private final class GetScalarCallbackImpl<S> implements SelectQueryCallback {
 		private final GetScalarCallback<S> scb2;
 		private S value;
 		
@@ -41,16 +42,16 @@ extends AbstractMapper2<T, K, C>
 		this(false, false);
 	}
 
-	public AbstractSqlMapper2(boolean _short) {
-		this(_short, false);
+	public AbstractSqlMapper2(boolean isShort) {
+		this(isShort, false);
 	}
 	
-	public AbstractSqlMapper2(boolean _short, boolean ordered) {
+	public AbstractSqlMapper2(boolean isShort, boolean ordered) {
 		super(ordered);
-		this._short = _short;
+		this.isShort = isShort;
 	}
 	
-	private final boolean _short;
+	private final boolean isShort;
 	
 	protected abstract String getConnectionKey();
 
@@ -108,7 +109,7 @@ extends AbstractMapper2<T, K, C>
 	
 	public T getById(K id) throws ORMException {
 		synchronized (getRegistry()) {
-			if (_short) {
+			if (isShort) {
 				if (getRegistry().size() == 0) {
 					getAll();
 				}
@@ -132,17 +133,21 @@ extends AbstractMapper2<T, K, C>
 					getSelectSql());
 			try {
 				setSelectStatementParams(stm, object.getKey());
-				ResultSet rs = stm.executeQuery();
-				if (rs.next()) {
-					State oldState = object.getORMState();
-					try {							
-						object.setORMState(State.LOADING);
-						loadInstance(object, rs);
+				final ResultSet rs = stm.executeQuery();
+				try {
+					if (rs.next()) {
+						State oldState = object.getORMState();
+						try {
+							object.setORMState(State.LOADING);
+							loadInstance(object, rs);
+						}
+						finally {
+							object.setORMState(oldState);
+						}
+						object.setORMState(State.CLEAN);
 					}
-					finally {
-						object.setORMState(oldState);
-					}
-					object.setORMState(State.CLEAN);
+				} finally {
+					rs.close();
 				}
 			} finally {
 				stm.close();
@@ -165,7 +170,7 @@ extends AbstractMapper2<T, K, C>
 
 	public Collection<T> getAll() throws ORMException {
 		synchronized (getRegistry()) {
-			if (!_short || getRegistry().size() == 0) {
+			if (!isShort || getRegistry().size() == 0) {
 				getCollectionForCb(new GetQueryCallback<T>() {
 					public String getSql() throws ORMException {
 						return getSelectAllSql();
@@ -195,8 +200,12 @@ extends AbstractMapper2<T, K, C>
 			try {
 				scb.setParams(stm);
 				final ResultSet rs = stm.executeQuery();
-				while (rs.next()) {
-					scb.onRow(rs);
+				try {
+					while (rs.next()) {
+						scb.onRow(rs);
+					}
+				} finally {
+					rs.close();
 				}
 			} finally {
 				stm.close();
@@ -216,8 +225,12 @@ extends AbstractMapper2<T, K, C>
 				scb.setParams(stm);
 				stm.execute();
 				final ResultSet rs = scb.getResultSet(stm);
-				while (rs.next()) {
-					scb.onRow(rs);
+				try {
+					while (rs.next()) {
+						scb.onRow(rs);
+					}
+				} finally {
+					rs.close();
 				}
 			} finally {
 				stm.close();
@@ -267,29 +280,39 @@ extends AbstractMapper2<T, K, C>
 		return all;
 	}
 
+	private final class CollectCsQueryCallback implements SelectCsQueryCallback {
+		private final SelectCsQueryCallback cb;
+		private final List<T> all;
+
+		public CollectCsQueryCallback(List<T> all, SelectCsQueryCallback cb) {
+			this.all = all;
+			this.cb = cb;
+		}
+
+		@Override
+		public String getSql() throws ORMException {
+			return cb.getSql();
+		}
+
+		@Override
+		public void onRow(ResultSet rs) throws ORMException, SQLException {
+			all.add(loadObject(rs));
+		}
+
+		@Override
+		public void setParams(PreparedStatement stm) throws SQLException, ORMException {
+			cb.setParams(stm);
+		}
+
+		@Override
+		public ResultSet getResultSet(CallableStatement stm) throws ORMException, SQLException {
+			return cb.getResultSet(stm);
+		}
+	}
+
 	public Collection<T> getCollection(final SelectCsQueryCallback cb) throws ORMException {
 		final List<T> all = new ArrayList<T>();
-		executeSelect(new SelectCsQueryCallback() {
-			@Override
-			public String getSql() throws ORMException {
-				return cb.getSql();
-			}
-
-			@Override
-			public void onRow(ResultSet rs) throws ORMException, SQLException {
-				all.add(loadObject(rs));
-			}
-
-			@Override
-			public void setParams(PreparedStatement stm) throws SQLException, ORMException {
-				cb.setParams(stm);
-			}
-
-			@Override
-			public ResultSet getResultSet(CallableStatement stm) throws ORMException, SQLException {
-				return cb.getResultSet(stm);
-			}
-		});
+		executeSelect(new CollectCsQueryCallback(all, cb));
 		if (getComparator() != null) {
 			Collections.sort(all, getComparator());
 		}
@@ -362,8 +385,9 @@ extends AbstractMapper2<T, K, C>
 				}
 			}
 		} finally {
-			if (cnn != null)
+			if (cnn != null) {
 				getContext().releaseConnection(cnn);
+			}
 		}
 	}
 	
@@ -389,8 +413,12 @@ extends AbstractMapper2<T, K, C>
 			final PreparedStatement stm = cnn.prepareStatement(text);
 			try {
 				ResultSet set = stm.executeQuery();
-				if (set.next()) {
-					return set.getInt("id");
+				try {
+					if (set.next()) {
+						return set.getInt("id");
+					}
+				} finally {
+					set.close();
 				}
 				throw new ORMException("Cannot allocate value for sequence: " + sqName);
 			}
@@ -422,8 +450,12 @@ extends AbstractMapper2<T, K, C>
 			final PreparedStatement stm = cnn.prepareStatement(text);
 			try {
 				ResultSet set = stm.executeQuery();
-				if (set.next()) {
-					return set.getLong("id");
+				try {
+					if (set.next()) {
+						return set.getLong("id");
+					}
+				} finally {
+					set.close();
 				}
 				throw new ORMException("Cannot allocate value for sequence: " + sqName);
 			}
@@ -481,4 +513,6 @@ extends AbstractMapper2<T, K, C>
 			ctx.releaseConnection(cnn);
 		}			
 	}
+
+
 }
