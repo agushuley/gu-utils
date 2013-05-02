@@ -1,9 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<version>1.0.2</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<groupId>com.gushuley.os</groupId>
 	<artifactId>gu-utils</artifactId>
 	<modelVersion>4.0.0</modelVersion>
+	
+	<properties>
+		<gu.utils.scm.url>scm:git:git@github.com:agushuley/gu-utils.git</gu.utils.scm.url>
+	</properties>
+	
+	<scm>
+		<connection>${gu.utils.scm.url}</connection>
+		<developerConnection>${gu.utils.scm.url}</developerConnection>		
+	</scm>
 	
 	<dependencies>
 		<dependency>
