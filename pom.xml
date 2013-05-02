@@ -5,6 +5,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	
 		<gu.utils.scm.url>scm:git:git@github.com:agushuley/gu-utils.git</gu.utils.scm.url>
 		<gu.repo.url>https://raw.github.com/agushuley/maven-repo/master</gu.repo.url>
 	</properties>
@@ -13,6 +15,19 @@
 		<connection>${gu.utils.scm.url}</connection>
 		<developerConnection>${gu.utils.scm.url}</developerConnection>
 	</scm>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build> 
 
 	<distributionManagement>
 		<repository>
@@ -47,7 +62,7 @@
 
 	<profiles>
 		<profile>
-			<id>snapshot</id>
+			<id>local-snapshot-target</id>
 			
 			<properties>
 				<altDeploymentRepository>gu-snapshots::default::file:${gu.repo.local}/snapshots</altDeploymentRepository>
@@ -55,13 +70,13 @@
 		</profile>
 
 		<profile>
-			<id>release</id>
+			<id>local-release-target</id>
 			
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-release-plugin</artifactId>
+						<version>2.3.2</version>
 						
 						<configuration>
 							<arguments>-DaltDeploymentRepository=gu-releases::default::file:${gu.repo.local}/releases</arguments>
