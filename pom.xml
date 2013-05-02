@@ -1,44 +1,75 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<version>1.0.4-SNAPSHOT</version>
 	<groupId>com.gushuley.os</groupId>
 	<artifactId>gu-utils</artifactId>
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<properties>
 		<gu.utils.scm.url>scm:git:git@github.com:agushuley/gu-utils.git</gu.utils.scm.url>
+		<gu.repo.url>https://raw.github.com/agushuley/maven-repo/master</gu.repo.url>
 	</properties>
-	
+
 	<scm>
 		<connection>${gu.utils.scm.url}</connection>
-		<developerConnection>${gu.utils.scm.url}</developerConnection>		
+		<developerConnection>${gu.utils.scm.url}</developerConnection>
 	</scm>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>gu-releases</id>
+			<url>${gu.repo.url}/releases/</url>
 		</repository>
 		<snapshotRepository>
 			<id>gu-snapshots</id>
+			<url>${gu.repo.url}/snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss-system</artifactId>
 			<version>4.2.2.GA</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jbossall-client</artifactId>
 			<version>4.2.2.GA</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>snapshot</id>
+			
+			<properties>
+				<altDeploymentRepository>gu-snapshots::default::file:${gu.repo.local}/snapshots</altDeploymentRepository>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>release</id>
+			
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						
+						<configuration>
+							<arguments>-DaltDeploymentRepository=gu-releases::default::file:${gu.repo.local}/releases</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
