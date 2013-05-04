@@ -164,7 +164,7 @@ pip-log.txt
 /target
 
 #Idea project
-/utils.iml
+/*.iml
 /.idea
 
 #maven 
