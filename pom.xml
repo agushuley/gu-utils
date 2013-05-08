@@ -8,7 +8,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	
 		<gu.utils.scm.url>scm:git:git@github.com:agushuley/gu-utils.git</gu.utils.scm.url>
-		<gu.repo.url>https://raw.github.com/agushuley/maven-repo/master</gu.repo.url>
+		<gu.repo.url>https://raw.github.com/agushuley/maven-repo/</gu.repo.url>
 	</properties>
 
 	<scm>
@@ -59,31 +59,4 @@
 			<version>4.2.2.GA</version>
 		</dependency>
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>local-snapshot-target</id>
-			
-			<properties>
-				<altDeploymentRepository>gu-snapshots::default::file:${gu.repo.local}/snapshots</altDeploymentRepository>
-			</properties>
-		</profile>
-
-		<profile>
-			<id>local-release-target</id>
-			
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-release-plugin</artifactId>
-						<version>2.3.2</version>
-						
-						<configuration>
-							<arguments>-DaltDeploymentRepository=gu-releases::default::file:${gu.repo.local}/releases</arguments>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>
