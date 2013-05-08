@@ -1,5 +1,6 @@
 package com.gushuley.utils.orm.sql;
 
+import com.gushuley.utils.orm.ORMContext;
 import com.gushuley.utils.orm.ORMException;
 import com.gushuley.utils.orm.ORMObject;
 import com.gushuley.utils.orm.ORMObject.State;
@@ -10,7 +11,7 @@ import java.sql.*;
 import java.util.*;
 
 
-public abstract class AbstractSqlMapper2<T extends ORMObject<K>, K, C extends GenericContext>
+public abstract class AbstractSqlMapper2<T extends ORMObject<K>, K, C extends ORMContext>
 extends AbstractMapper2<T, K, C> 
 {
 	private final class GetScalarCallbackImpl<S> implements SelectQueryCallback {

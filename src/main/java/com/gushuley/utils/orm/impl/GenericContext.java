@@ -245,6 +245,7 @@ implements ORMContext {
 	}
 	
 
+	@Override
 	public ORMException parseException(SQLException ex) {
 		return new ORMException(ex);
 	}

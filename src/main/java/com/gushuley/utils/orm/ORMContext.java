@@ -1,6 +1,7 @@
 package com.gushuley.utils.orm;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -36,4 +37,6 @@ public interface ORMContext {
 			Class<C> forClass) throws ORMException;
 
 	void releaseUnusedConnections();
+
+	ORMException parseException( SQLException e );
 }

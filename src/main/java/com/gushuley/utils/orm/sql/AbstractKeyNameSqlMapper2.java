@@ -2,11 +2,12 @@ package com.gushuley.utils.orm.sql;
 
 import java.sql.*;
 
+import com.gushuley.utils.orm.ORMContext;
 import com.gushuley.utils.orm.ORMException;
 import com.gushuley.utils.orm.impl.*;
 
 
-public abstract class AbstractKeyNameSqlMapper2<C extends AbtsractKeyNameObject<K>, K, X extends GenericContext>
+public abstract class AbstractKeyNameSqlMapper2<C extends AbtsractKeyNameObject<K>, K, X extends ORMContext>
 extends AbstractSqlMapper2<C, K, X> 
 {
 	public AbstractKeyNameSqlMapper2(String table, String idColumn,
