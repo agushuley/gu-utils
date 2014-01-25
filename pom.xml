@@ -8,7 +8,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	
 		<gu.utils.scm.url>scm:git:git@github.com:agushuley/gu-utils.git</gu.utils.scm.url>
-		<gu.repo.url>https://raw.github.com/agushuley/maven-repo/</gu.repo.url>
 	</properties>
 
 	<scm>

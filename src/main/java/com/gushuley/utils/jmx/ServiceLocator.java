@@ -43,11 +43,10 @@ public final class ServiceLocator {
 		return (MBeanServer) MBeanServerFactory.findMBeanServer(null).get(0);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static Collection<ObjectInstance> listNames(String baseName)
 			throws JmxException {
 		try {
-			List<ObjectInstance> list = new ArrayList();
+			List<ObjectInstance> list = new ArrayList<ObjectInstance>();
 			list.addAll(locateServer().queryMBeans(
 					new ObjectName(baseName + ",*"), null));
 			return list;
