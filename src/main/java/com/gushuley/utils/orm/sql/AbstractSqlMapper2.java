@@ -5,7 +5,6 @@ import com.gushuley.utils.orm.ORMException;
 import com.gushuley.utils.orm.ORMObject;
 import com.gushuley.utils.orm.ORMObject.State;
 import com.gushuley.utils.orm.impl.AbstractMapper2;
-import com.gushuley.utils.orm.impl.GenericContext;
 
 import java.sql.*;
 import java.util.*;

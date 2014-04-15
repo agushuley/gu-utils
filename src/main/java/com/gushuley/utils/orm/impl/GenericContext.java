@@ -178,7 +178,7 @@ implements ORMContext {
 
 	@SuppressWarnings("unchecked")
 	public void add(ORMObject<?> o) throws ORMException {
-		getMapper2((Class<ORMObject>)o.getClass()).add(o);
+		getMapper2((Class<ORMObject<?>>)o.getClass()).add(o);
 	}
 
 	public <C extends ORMObject<?>, K> Collection<C> find(Class<C> objectClass, K... key) throws ORMException {

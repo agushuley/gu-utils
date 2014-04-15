@@ -72,8 +72,9 @@ public class ORMObjectsListWrapper<T> extends
 	public List<T> subList(int fromIndex, int toIndex) {
 		return getList().subList(fromIndex, toIndex);
 	}
-	
-	public void sort(Comparator<T> comparator) {
-		Collections.sort(getList(), comparator);
+
+	@Override
+	public void sort( Comparator<? super T> c ) {
+		Collections.sort( getList(), c );
 	}
 }

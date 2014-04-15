@@ -3,6 +3,7 @@ package com.gushuley.utils.orm.impl;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 public class GeneralConnectionWrapper implements Connection {
 	public GeneralConnectionWrapper(Connection inner) {
@@ -195,6 +196,31 @@ public class GeneralConnectionWrapper implements Connection {
 	public Struct createStruct(String typeName, Object[] attributes)
 			throws SQLException {
 		return inner.createStruct(typeName, attributes);
+	}
+
+	@Override
+	public void setSchema( String schema ) throws SQLException {
+		inner.setSchema( schema );
+	}
+
+	@Override
+	public String getSchema() throws SQLException {
+		return inner.getSchema();
+	}
+
+	@Override
+	public void abort( Executor executor ) throws SQLException {
+		inner.abort( executor );
+	}
+
+	@Override
+	public void setNetworkTimeout( Executor executor, int milliseconds ) throws SQLException {
+		inner.setNetworkTimeout( executor, milliseconds );
+	}
+
+	@Override
+	public int getNetworkTimeout() throws SQLException {
+		return inner.getNetworkTimeout();
 	}
 
 	public Properties getClientInfo() throws SQLException {
