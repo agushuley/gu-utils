@@ -162,8 +162,11 @@ implements ORMContext {
 		synchronized (cnns) {
 			for (Connection cnn : cnns.values()) {
 				try {
-					cnn.rollback();
-					cnn.close();
+					try {
+						cnn.rollback();
+					} finally {
+						cnn.close();
+					}
 				} catch (SQLException e) {
 					log.error("", e);
 				}
